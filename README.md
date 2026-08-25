@@ -1,12 +1,12 @@
-# Ajo Savings Tracker 🇳🇬
+# SaveCircle 🇳🇬
 
-A modern, high-aesthetic web application for managing traditional rotating thrift associations (**Ajo** / ROSCA) across Nigeria.
+A modern, high-aesthetic web application for managing traditional rotating thrift associations (**SaveCircle** / ROSCA) across Nigeria.
 
 ---
 
 ## 📌 Problem Context
 
-In Nigeria, traditional thrift groups (*Ajo*) are a vital financial lifeline for market traders, artisans, small business owners, and staff cooperatives. Members contribute a fixed amount of money (e.g. ₦25,000 to ₦200,000) into a shared pool at regular intervals (weekly, bi-weekly, or monthly). In each cycle, one member receives the full lump-sum payout (*takes the hand* or *collects the pot*).
+In Nigeria, traditional thrift groups (*SaveCircle*) are a vital financial lifeline for market traders, artisans, small business owners, and staff cooperatives. Members contribute a fixed amount of money (e.g. ₦25,000 to ₦200,000) into a shared pool at regular intervals (weekly, bi-weekly, or monthly). In each cycle, one member receives the full lump-sum payout (*takes the hand* or *collects the pot*).
 
 ### Manual Challenges Solved:
 - **Paper Notebook Errors**: Eliminates lost ledger books and dispute-prone manual record-keeping.
@@ -20,9 +20,9 @@ In Nigeria, traditional thrift groups (*Ajo*) are a vital financial lifeline for
 
 This application comes pre-configured with authentic Nigerian commerce hubs and business cooperatives:
 
-1. **Balogun Market Fashion Merchants Ajo** (*Lagos Island, Lagos*) — ₦150,000 / Weekly
-2. **Watt Market Fabric & Textiles Ajo** (*Watt Market, Calabar*) — ₦100,000 / Weekly
-3. **Marian Fresh Farmers Ajo** (*Marian Market, Calabar*) — ₦25,000 / Bi-weekly
+1. **Balogun Market Fashion Merchants SaveCircle** (*Lagos Island, Lagos*) — ₦150,000 / Weekly
+2. **Watt Market Fabric & Textiles SaveCircle** (*Watt Market, Calabar*) — ₦100,000 / Weekly
+3. **Marian Fresh Farmers SaveCircle** (*Marian Market, Calabar*) — ₦25,000 / Bi-weekly
 4. **Marian Road Tech & Business Guild** (*State Housing Estate, Calabar*) — ₦200,000 / Monthly
 
 ---
@@ -35,7 +35,7 @@ This application comes pre-configured with authentic Nigerian commerce hubs and 
 - Highlight card for the **Next Scheduled Payout Recipient**.
 
 ### 2. Group Management & Custom Location Naming
-- Create custom Ajo pools with tailored group titles, free-form location tags (*e.g. Watt Market Calabar, Balogun Lagos, Wuse Abuja, Ariaria Aba*), contribution amounts (₦), frequencies (Weekly, Bi-weekly, Monthly), and late penalty rules.
+- Create custom SaveCircle pools with tailored group titles, free-form location tags (*e.g. Watt Market Calabar, Balogun Lagos, Wuse Abuja, Ariaria Aba*), contribution amounts (₦), frequencies (Weekly, Bi-weekly, Monthly), and late penalty rules.
 - Member rosters with bank details, contact info, and trust scores (0–100%).
 
 ### 3. Contributions Matrix & Verification
@@ -44,7 +44,7 @@ This application comes pre-configured with authentic Nigerian commerce hubs and 
 - Log payments across Nigerian channels (Moniepoint, OPay, Zenith, First Bank, Access Bank, UBA, Cash at Market Stand, USSD).
 
 ### 4. Official Digital Receipt Generator
-- Generates printable/downloadable digital receipts stamped by the Group Trustee (*Iya Ajo*).
+- Generates printable/downloadable digital receipts stamped by the Group Trustee (*Iya SaveCircle*).
 
 ### 5. Payout Rotation & Turn Swapping
 - Visual rotation timeline showing past disbursed payouts and upcoming turns.
@@ -78,7 +78,7 @@ This application comes pre-configured with authentic Nigerian commerce hubs and 
 
 1. Navigate to the project directory:
    ```bash
-   cd C:\Users\HomePC\.gemini\antigravity\scratch\ajo-savings-tracker
+   cd C:\SaveCircle
    ```
 
 2. Install dependencies:

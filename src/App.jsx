@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
+import TopNav from './components/TopNav';
 import Dashboard from './components/Dashboard';
 import GroupList from './components/GroupList';
 import GroupDetail from './components/GroupDetail';
@@ -11,10 +12,14 @@ import AuditLog from './components/AuditLog';
 import Toast from './components/Toast';
 import Login from './components/Login';
 import RegisterMemberModal from './components/RegisterMemberModal';
+import MemberDashboard from './components/MemberDashboard';
+import MembersList from './components/MembersList';
+import AdminsList from './components/AdminsList';
+import AiChat from './components/AiChat';
 import { useAuth } from './context/AuthContext';
 
 import { initialCalabarGroups, initialAuditLogs } from './data/initialData';
-import { API_BASE_URL } from './utils/api';
+import { API_BASE_URL, authFetch } from './utils/api';
 
 export default function App() {
   const { user, logout } = useAuth();
@@ -22,7 +27,7 @@ export default function App() {
   const [logs, setLogs] = useState([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const [activeNav, setActiveNav] = useState('dashboard'); // 'dashboard', 'groups', 'audit', or group id
+  const [activeNav, setActiveNav] = useState('dashboard'); // 'dashboard', 'groups', 'contributions', 'members', 'admins', 'audit', 'group-detail'
   const [selectedGroupId, setSelectedGroupId] = useState(null);
 
   // Modals
@@ -39,18 +44,32 @@ export default function App() {
     setToast({ message, type });
   };
 
-  // Fetch initial data from Backend
+  const isMember = user?.role === 'member';
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+
+  // Reset navigation whenever the signed-in user changes (login/logout)
   useEffect(() => {
+    setActiveNav('dashboard');
+    setSelectedGroupId(null);
+  }, [user?.id]);
+
+  // Fetch initial data from Backend (role-scoped by the API).
+  // Triggered by user.id so it runs once per login and after a page reload.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    setIsInitialLoad(true);
     Promise.all([
-      fetch(`${API_BASE_URL}/api/groups`).then(res => res.json()),
-      fetch(`${API_BASE_URL}/api/logs`).then(res => res.json())
+      authFetch('/api/groups').then(res => res.json()),
+      authFetch('/api/logs').then(res => res.json())
     ])
     .then(([fetchedGroups, fetchedLogs]) => {
-      if (fetchedGroups.length > 0) {
+      if (cancelled) return;
+      if (Array.isArray(fetchedGroups) && fetchedGroups.length > 0) {
         setGroups(fetchedGroups);
-        setLogs(fetchedLogs);
+        setLogs(Array.isArray(fetchedLogs) ? fetchedLogs : []);
       } else {
-        // First run: seed db with demo data
+        // First run: seed db with demo data (superadmin-only bootstrap)
         setGroups(initialCalabarGroups);
         setLogs(initialAuditLogs);
         fetch(`${API_BASE_URL}/api/groups/sync`, {
@@ -62,23 +81,27 @@ export default function App() {
       }
       setIsInitialLoad(false);
     })
-    .catch(console.error);
-  }, []);
+    .catch(() => {
+      if (cancelled) return;
+      setIsInitialLoad(false);
+    });
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
-  // Sync state to Backend on change
+  // Sync state to Backend on change (admins/superadmin only — members don't modify group data)
   useEffect(() => {
-    if (isInitialLoad) return;
+    if (isInitialLoad || !isAdmin) return;
     fetch(`${API_BASE_URL}/api/groups/sync`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(groups)
     }).catch(console.error);
-  }, [groups, isInitialLoad]);
+  }, [groups, isInitialLoad, isAdmin]);
 
   useEffect(() => {
-    if (isInitialLoad) return;
+    if (isInitialLoad || !isAdmin) return;
     fetch(`${API_BASE_URL}/api/logs/sync`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(logs)
     }).catch(console.error);
-  }, [logs, isInitialLoad]);
+  }, [logs, isInitialLoad, isAdmin]);
 
   // Log action helper
   const addAuditLog = (groupName, action, detail) => {
@@ -94,7 +117,7 @@ export default function App() {
 
   // Reset demo data
   const handleResetDemoData = () => {
-    if (window.confirm('Reset all Ajo groups to original demo state and wipe database?')) {
+    if (window.confirm('Reset all SaveCircle groups to original demo state and wipe database?')) {
       setGroups(initialCalabarGroups);
       setLogs(initialAuditLogs);
       fetch(`${API_BASE_URL}/api/groups/sync`, {
@@ -110,7 +133,7 @@ export default function App() {
   // Create new group
   const handleCreateGroup = (newGroup) => {
     setGroups(prev => [newGroup, ...prev]);
-    addAuditLog(newGroup.name, 'Create Group', `Created new Ajo group in ${newGroup.hubLocation} with ${newGroup.members.length} members.`);
+    addAuditLog(newGroup.name, 'Create Group', `Created new SaveCircle group in ${newGroup.hubLocation} with ${newGroup.members.length} members.`);
     showToast(`Created ${newGroup.name} successfully!`);
   };
 
@@ -258,95 +281,133 @@ export default function App() {
   const selectedGroup = groups.find(g => g.id === selectedGroupId);
 
   if (!user) {
-    return <Login />;
+    return (
+      <>
+        <Login />
+        <AiChat groups={[]} />
+      </>
+    );
   }
 
+  const handleNav = (tab) => {
+    setActiveNav(tab);
+    if (tab !== 'group-detail') setSelectedGroupId(null);
+  };
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar 
-        activeTab={activeNav}
-        setActiveTab={(tab) => {
-          setActiveNav(tab);
-          if (tab !== 'group-detail') setSelectedGroupId(null);
+    <div style={{ minHeight: '100vh', display: 'flex' }}>
+      {/* Watermark logo — tiled across the whole app */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 0,
+          opacity: 0.05,
+          pointerEvents: 'none',
+          backgroundImage: 'url("/logo.png")',
+          backgroundSize: '220px 220px',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'repeat'
         }}
-        onOpenCreateModal={() => setIsCreateModalOpen(true)}
-        onResetDemoData={handleResetDemoData}
-        onLogout={logout}
-        user={user}
+      />
+      {/* Sidebar (modules only) */}
+      <Sidebar
+        activeNav={activeNav}
+        setActiveNav={handleNav}
       />
 
-      <main className="app-container" style={{ flex: 1 }}>
-        {activeNav === 'dashboard' && (
-          <Dashboard 
-            groups={groups} 
-            onSelectGroup={handleSelectGroup}
-            onOpenCreateModal={() => setIsCreateModalOpen(true)}
-            onOpenRegisterModal={() => setIsRegisterModalOpen(true)}
-            logs={logs}
-            onViewReceipt={(receipt) => setReceiptData(receipt)}
-          />
-        )}
+      <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
+        {/* Top navbar: brand + actions (Create, Reset, Theme, Logout) */}
+        <TopNav
+          onOpenCreateModal={() => setIsCreateModalOpen(true)}
+          onResetDemoData={handleResetDemoData}
+        />
+        <div className="app-container" style={{ flex: 1, padding: '1.5rem 1.75rem' }}>
+          {/* Member personal dashboard */}
+          {isMember && activeNav === 'dashboard' && (
+            <MemberDashboard groups={groups} />
+          )}
 
-        {activeNav === 'groups' && (
-          <GroupList 
-            groups={groups}
-            onSelectGroup={handleSelectGroup}
-            onOpenCreateModal={() => setIsCreateModalOpen(true)}
-          />
-        )}
+          {/* Admin/superadmin dashboard */}
+          {!isMember && activeNav === 'dashboard' && (
+            <Dashboard
+              groups={groups}
+              onSelectGroup={handleSelectGroup}
+              onOpenCreateModal={() => setIsCreateModalOpen(true)}
+              onOpenRegisterModal={() => setIsRegisterModalOpen(true)}
+              logs={logs}
+              onViewReceipt={(receipt) => setReceiptData(receipt)}
+            />
+          )}
 
-        {activeNav === 'audit' && (
-          <AuditLog logs={logs} />
-        )}
+          {activeNav === 'groups' && (
+            <GroupList
+              groups={groups}
+              onSelectGroup={handleSelectGroup}
+              onOpenCreateModal={() => setIsCreateModalOpen(true)}
+            />
+          )}
 
-        {activeNav === 'group-detail' && selectedGroup && (
-          <GroupDetail 
-            group={selectedGroup}
-            onBack={() => setActiveNav('groups')}
-            onLogPayment={(g) => setLogPaymentGroup(g)}
-            onVerifyPayment={handleVerifyPayment}
-            onViewReceipt={(receipt) => setReceiptData(receipt)}
-            onOpenSwapModal={(g) => setSwapGroup(g)}
-            onDisbursePayout={handleDisbursePayout}
-          />
-        )}
-      </main>
+          {activeNav === 'contributions' && (
+            <GroupDetail
+              group={groups[0] || selectedGroup || {}}
+              onBack={() => setActiveNav('dashboard')}
+              onLogPayment={(g) => setLogPaymentGroup(g)}
+              onVerifyPayment={handleVerifyPayment}
+              onViewReceipt={(receipt) => setReceiptData(receipt)}
+              onOpenSwapModal={(g) => setSwapGroup(g)}
+              onDisbursePayout={handleDisbursePayout}
+              readOnly={isMember}
+            />
+          )}
 
-      {/* Footer */}
-      <footer style={{
-        borderTop: '1px solid var(--border-card)',
-        background: 'rgba(11, 19, 32, 0.9)',
-        padding: '1.5rem 1.25rem',
-        textAlign: 'center',
-        color: 'var(--text-muted)',
-        fontSize: '0.8rem'
-      }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <strong style={{ color: 'var(--text-main)' }}>Ajo & Esusu Savings Tracker</strong> &bull; Calabar, Cross River State Edition
-          </div>
-          <div>
-            Built with React ESM &bull; Modern Glassmorphism UI
-          </div>
+          {activeNav === 'members' && (
+            <MembersList
+              groups={groups}
+              onOpenRegisterModal={() => setIsRegisterModalOpen(true)}
+            />
+          )}
+
+          {activeNav === 'admins' && (
+            <AdminsList groups={groups} />
+          )}
+
+          {activeNav === 'audit' && (
+            <AuditLog logs={logs} />
+          )}
+
+          {activeNav === 'group-detail' && selectedGroup && (
+            <GroupDetail
+              group={selectedGroup}
+              onBack={() => setActiveNav('groups')}
+              onLogPayment={(g) => setLogPaymentGroup(g)}
+              onVerifyPayment={handleVerifyPayment}
+              onViewReceipt={(receipt) => setReceiptData(receipt)}
+              onOpenSwapModal={(g) => setSwapGroup(g)}
+              onDisbursePayout={handleDisbursePayout}
+            />
+          )}
         </div>
-      </footer>
+      </main>
 
       {/* Modals */}
       {isCreateModalOpen && (
-        <CreateGroupModal 
+        <CreateGroupModal
           onClose={() => setIsCreateModalOpen(false)}
           onCreateGroup={handleCreateGroup}
         />
       )}
 
       {isRegisterModalOpen && (
-        <RegisterMemberModal 
+        <RegisterMemberModal
+          groups={groups}
           onClose={() => setIsRegisterModalOpen(false)}
         />
       )}
 
       {logPaymentGroup && (
-        <LogPaymentModal 
+        <LogPaymentModal
           group={logPaymentGroup}
           onClose={() => setLogPaymentGroup(null)}
           onSubmitPayment={handleSubmitPayment}
@@ -354,14 +415,14 @@ export default function App() {
       )}
 
       {receiptData && (
-        <ReceiptModal 
+        <ReceiptModal
           receiptData={receiptData}
           onClose={() => setReceiptData(null)}
         />
       )}
 
       {swapGroup && (
-        <SwapPositionModal 
+        <SwapPositionModal
           group={swapGroup}
           onClose={() => setSwapGroup(null)}
           onSwapSubmit={handleSwapSubmit}
@@ -370,6 +431,9 @@ export default function App() {
 
       {/* Toast Alert */}
       <Toast toast={toast} onClose={() => setToast(null)} />
+
+      {/* Floating AI Assistant */}
+      <AiChat groups={groups} />
     </div>
   );
 }

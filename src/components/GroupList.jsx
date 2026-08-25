@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { formatNaira } from '../utils/formatters';
 import { Search, MapPin, Users, Wallet, ArrowUpRight, Plus, ShieldCheck } from 'lucide-react';
 
 export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) {
+  const { user } = useAuth();
+  const isAdminUser = ['admin', 'superadmin', 'trustee'].includes(user?.role);
   const [searchTerm, setSearchTerm] = useState('');
   const [frequencyFilter, setFrequencyFilter] = useState('ALL');
 
@@ -26,7 +29,7 @@ export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) 
       }}>
         <div>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)' }}>
-            Ajo Savings Groups
+            SaveCircle Savings Groups
           </h2>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             Select a thrift pool to manage contributions, verify receipts, and view payout rotation.
@@ -62,14 +65,17 @@ export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) 
             style={{ width: '130px', padding: '0.5rem' }}
           >
             <option value="ALL">All Frequencies</option>
+            <option value="DAILY">Daily</option>
             <option value="WEEKLY">Weekly</option>
             <option value="BI-WEEKLY">Bi-Weekly</option>
             <option value="MONTHLY">Monthly</option>
           </select>
 
-          <button onClick={onOpenCreateModal} className="btn btn-gold btn-sm">
-            <Plus className="w-4 h-4" /> New Pool
-          </button>
+          {isAdminUser && (
+            <button onClick={onOpenCreateModal} className="btn btn-gold btn-sm">
+              <Plus className="w-4 h-4" /> New Pool
+            </button>
+          )}
         </div>
       </div>
 
@@ -82,7 +88,7 @@ export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) 
         {filteredGroups.length === 0 ? (
           <div className="glass-card" style={{ gridColumn: '1 / -1', padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
             <Wallet className="w-12 h-12 text-muted" style={{ margin: '0 auto 1rem auto', opacity: 0.5 }} />
-            <h3>No Calabar Ajo groups found matching your search.</h3>
+            <h3>No Calabar SaveCircle groups found matching your search.</h3>
             <p style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>Try clearing filters or create a new group.</p>
           </div>
         ) : (
@@ -106,7 +112,7 @@ export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) 
                   {/* Top badges */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
                     <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>
-                      {group.frequency} Ajo
+                      {group.frequency} SaveCircle
                     </span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                       <MapPin className="w-3.5 h-3.5 text-emerald-400" /> {group.hubLocation}
@@ -123,7 +129,7 @@ export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) 
 
                   {/* Contribution & Recipient Box */}
                   <div style={{
-                    background: '#0b1320',
+                    background: 'var(--bg-surface)',
                     border: '1px solid var(--border-card)',
                     borderRadius: 'var(--radius-sm)',
                     padding: '0.85rem',
@@ -154,7 +160,7 @@ export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) 
                       <span style={{ color: 'var(--text-main)', fontWeight: 600 }}>{verifiedCount}/{group.members.length} Paid ({progressPct}%)</span>
                     </div>
 
-                    <div style={{ width: '100%', height: '6px', background: '#1e293b', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ width: '100%', height: '6px', background: 'var(--soft-bg)', borderRadius: '3px', overflow: 'hidden' }}>
                       <div style={{
                         width: `${progressPct}%`,
                         height: '100%',

@@ -1,6 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-:root {
+/* Offline-safe font stack: uses system fonts, no external network requests. */
+:root,
+[data-theme="dark"] {
   --bg-main: #0b1320;
   --bg-surface: #111c2e;
   --bg-surface-hover: #19273f;
@@ -34,6 +34,50 @@
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
   --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.45);
   --shadow-glow: 0 0 25px rgba(0, 135, 81, 0.25);
+
+  --input-bg: #0b1320;
+  --input-border: #1e293b;
+  --overlay-bg: rgba(11, 19, 32, 0.85);
+  --soft-bg: #1e293b;
+  --banner-bg: linear-gradient(135deg, rgba(0, 135, 81, 0.25) 0%, rgba(245, 158, 11, 0.15) 100%);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg-main: #f1f5f9;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #e2e8f0;
+  --bg-card: rgba(255, 255, 255, 0.82);
+  --border-card: rgba(15, 23, 42, 0.1);
+  --border-card-accent: rgba(0, 135, 81, 0.35);
+
+  --primary: #008751;
+  --primary-light: #059669;
+  --primary-dark: #00663c;
+  --primary-glow: rgba(0, 135, 81, 0.25);
+
+  --accent-gold: #d97706;
+  --accent-gold-light: #f59e0b;
+  --accent-gold-glow: rgba(245, 158, 11, 0.2);
+
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #94a3b8;
+
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #2563eb;
+
+  --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 12px 36px rgba(15, 23, 42, 0.15);
+  --shadow-glow: 0 0 25px rgba(0, 135, 81, 0.18);
+
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --overlay-bg: rgba(241, 245, 249, 0.85);
+  --soft-bg: #e2e8f0;
+  --banner-bg: linear-gradient(135deg, rgba(0, 135, 81, 0.15) 0%, rgba(245, 158, 11, 0.12) 100%);
 }
 
 * {
@@ -43,7 +87,7 @@
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
   background-color: var(--bg-main);
   color: var(--text-main);
   min-height: 100vh;
@@ -64,7 +108,7 @@ body {
   background: var(--bg-main);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
+  background: var(--soft-bg);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -145,11 +189,11 @@ body {
 }
 
 .btn-secondary {
-  background: #1e293b;
+  background: var(--soft-bg);
   color: var(--text-main);
 }
 .btn-secondary:hover {
-  background: #334155;
+  background: var(--bg-surface-hover);
 }
 
 .btn-danger {
@@ -218,7 +262,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(11, 19, 32, 0.85);
+  background: var(--overlay-bg);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -255,8 +299,8 @@ body {
 }
 
 .form-control {
-  background: #0b1320;
-  border: 1px solid #1e293b;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
   padding: 0.65rem 0.9rem;
   color: var(--text-main);
@@ -315,7 +359,7 @@ body {
 
 /* Nigerian Calabar Accent Banner */
 .calabar-banner {
-  background: linear-gradient(135deg, rgba(0, 135, 81, 0.25) 0%, rgba(245, 158, 11, 0.15) 100%);
+  background: var(--banner-bg);
   border: 1px solid var(--border-card-accent);
   border-radius: var(--radius-md);
   padding: 1.25rem 1.5rem;
@@ -324,4 +368,121 @@ body {
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 2rem;
+}
+
+/* Form input (used by Login & modals) */
+.form-input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.9rem;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.92rem;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+.form-input::placeholder {
+  color: var(--text-dim);
+}
+
+/* Data tables */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border-card);
+  background: var(--bg-surface);
+}
+.table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-card);
+  color: var(--text-muted);
+}
+.table tr:hover td {
+  background: var(--bg-surface-hover);
+}
+
+/* Password wrapper (eye toggle) */
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper .form-input {
+  padding-right: 2.6rem;
+}
+.password-toggle {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+}
+.password-toggle:hover {
+  color: var(--primary-light);
+}
+
+/* Avatar (login & misc) */
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary) 0%, #00a865 100%);
+  box-shadow: var(--shadow-glow);
+}
+
+/* Prominent login theme toggle */
+.theme-toggle-btn {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-card);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  z-index: 5;
+  transition: all 0.2s ease;
+}
+.theme-toggle-btn:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+.theme-toggle-btn .theme-toggle-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-gold);
 }

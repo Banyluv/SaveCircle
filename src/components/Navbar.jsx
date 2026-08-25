@@ -4,7 +4,7 @@ import { Wallet, Plus, RotateCcw, ShieldCheck, MapPin, Layers, History } from 'l
 export default function Navbar({ activeTab, setActiveTab, onOpenCreateModal, onResetDemoData, onLogout }) {
   return (
     <header style={{
-      background: 'rgba(17, 28, 46, 0.85)',
+      background: 'var(--bg-surface)',
       backdropFilter: 'blur(12px)',
       borderBottom: '1px solid var(--border-card)',
       position: 'sticky',
@@ -38,7 +38,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenCreateModal, onR
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                Ajo Tracker
+                SaveCircle
               </span>
               <span className="badge badge-success" style={{ fontSize: '0.65rem' }}>
                 Nigeria 🇳🇬
@@ -62,7 +62,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenCreateModal, onR
             onClick={() => setActiveTab('groups')}
             className={`btn btn-sm ${activeTab === 'groups' ? 'btn-primary' : 'btn-outline'}`}
           >
-            <Wallet className="w-4 h-4" /> Ajo Groups
+            <Wallet className="w-4 h-4" /> SaveCircle Groups
           </button>
           <button
             onClick={() => setActiveTab('audit')}
@@ -95,7 +95,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenCreateModal, onR
             onClick={onOpenCreateModal}
             className="btn btn-sm btn-gold"
           >
-            <Plus className="w-4 h-4" /> Create Ajo Pool
+            <Plus className="w-4 h-4" /> Create SaveCircle Pool
           </button>
         </div>
       </div>

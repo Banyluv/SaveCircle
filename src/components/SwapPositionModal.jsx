@@ -49,7 +49,7 @@ export default function SwapPositionModal({ group, onClose, onSwapSubmit }) {
             gridTemplateColumns: '1fr auto 1fr',
             alignItems: 'center',
             gap: '0.75rem',
-            background: '#0b1320',
+            background: 'var(--bg-surface)',
             padding: '1rem',
             borderRadius: 'var(--radius-sm)',
             marginBottom: '1.25rem',

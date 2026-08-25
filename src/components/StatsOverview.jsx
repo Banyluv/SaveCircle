@@ -77,7 +77,7 @@ export default function StatsOverview({ groups }) {
           {pendingCount} <span style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-muted)' }}>payments</span>
         </h3>
         <p style={{ fontSize: '0.78rem', color: 'var(--accent-gold)', marginTop: '0.4rem' }}>
-          Requires Trustee / Iya Ajo verification
+          Requires Trustee / Iya SaveCircle verification
         </p>
       </div>
 

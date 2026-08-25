@@ -21,6 +21,17 @@ dist-ssr
 
 # Backend environment variables
 backend/.env
+backend/node_modules
+
+# Electron build artifacts (keep the installer exe, ignore unpacked app + temp)
+release/win-unpacked/
+release/*.tmp/
+release/*.blockmap
+release/*.yml
+release/builder-*
+release/*.7z
+release/*.exe
+electron/node_modules
 
 # Editor directories and files
 .vscode/*

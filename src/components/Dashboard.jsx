@@ -36,12 +36,12 @@ export default function Dashboard({ groups, onSelectGroup, onOpenCreateModal, on
           </div>
 
           <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-            Ajo Group Savings Tracker
+            SaveCircle Group Savings
           </h1>
 
           {user && (
             <p style={{ fontSize: '1rem', color: 'var(--text-main)', marginTop: '0.75rem', maxWidth: '720px', fontWeight: 600 }}>
-              Welcome back, {user.name}! {user.role === 'trustee' ? 'Create a new group and add members to build your Ajo pool.' : 'You are logged in as a member — check your groups, contributions, and upcoming payouts.'}
+              Welcome back, {user.name}! {['admin', 'superadmin', 'trustee'].includes(user.role) ? 'Manage your groups, verify contributions, and add members.' : 'You are logged in as a member — check your groups, contributions, and upcoming payouts.'}
             </p>
           )}
 
@@ -50,13 +50,13 @@ export default function Dashboard({ groups, onSelectGroup, onOpenCreateModal, on
           </p>
         </div>
 
-        {user?.role === 'trustee' && (
+        {['admin', 'superadmin', 'trustee'].includes(user?.role) && (
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <button onClick={onOpenRegisterModal} className="btn btn-outline" style={{ background: 'rgba(11, 19, 32, 0.7)' }}>
+            <button onClick={onOpenRegisterModal} className="btn btn-outline" style={{ background: 'var(--bg-surface)' }}>
               <UserPlus className="w-4 h-4" /> Add Member Login
             </button>
             <button onClick={onOpenCreateModal} className="btn btn-gold">
-              <Plus className="w-4 h-4" /> Start New Ajo Pool
+              <Plus className="w-4 h-4" /> Start New SaveCircle Pool
             </button>
           </div>
         )}
@@ -71,13 +71,13 @@ export default function Dashboard({ groups, onSelectGroup, onOpenCreateModal, on
           padding: '1.5rem',
           marginBottom: '2rem',
           borderLeft: '4px solid var(--accent-gold)',
-          background: 'linear-gradient(135deg, rgba(17, 28, 46, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%)'
+          background: 'var(--bg-card)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                 <span className="badge badge-warning">
-                  <Award className="w-3.5 h-3.5" /> Next Scheduled Ajo Payout
+                  <Award className="w-3.5 h-3.5" /> Next Scheduled SaveCircle Payout
                 </span>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                   {nextPayoutInfo.group.name} &bull; {nextPayoutInfo.group.hubLocation}

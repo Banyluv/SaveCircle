@@ -5,15 +5,15 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
-        const savedUser = localStorage.getItem('ajo_user');
+        const savedUser = localStorage.getItem('savecircle_user');
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
     useEffect(() => {
         if (user) {
-            localStorage.setItem('ajo_user', JSON.stringify(user));
+            localStorage.setItem('savecircle_user', JSON.stringify(user));
         } else {
-            localStorage.removeItem('ajo_user');
+            localStorage.removeItem('savecircle_user');
         }
     }, [user]);
 
@@ -27,6 +27,8 @@ export const AuthProvider = ({ children }) => {
             const data = await response.json();
             if (response.ok) {
                 setUser(data);
+                // Persist synchronously so subsequent authFetch calls have the token
+                localStorage.setItem('savecircle_user', JSON.stringify(data));
                 return { success: true };
             }
             return { success: false, message: data.message || 'Login failed' };
@@ -37,6 +39,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         setUser(null);
+        localStorage.removeItem('savecircle_user');
     };
 
     return (

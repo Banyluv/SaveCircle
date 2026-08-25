@@ -10,6 +10,9 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
   const [penaltyFee, setPenaltyFee] = useState('2000');
   const [trustee, setTrustee] = useState('');
   const [trusteeContact, setTrusteeContact] = useState('');
+  const [groupBankName, setGroupBankName] = useState('');
+  const [groupAccountNumber, setGroupAccountNumber] = useState('');
+  const [groupAccountName, setGroupAccountName] = useState('');
   const [memberCount, setMemberCount] = useState('6');
 
   const handleSubmit = (e) => {
@@ -18,7 +21,7 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
 
     // Generate initial members based on authentic Nigerian names
     const memberTemplates = [
-      { name: trustee || 'Mama Blessing (Trustee)', role: 'Iya Ajo / Trustee', phone: trusteeContact || '08030001122' },
+      { name: trustee || 'Mama Blessing (Trustee)', role: 'Iya SaveCircle / Trustee', phone: trusteeContact || '08030001122' },
       { name: 'Effiong Bassey', role: 'Member', phone: '08021113344' },
       { name: 'Ekaette Okon', role: 'Member', phone: '08134445566' },
       { name: 'Chief Asuquo Henshaw', role: 'Member', phone: '07036667788' },
@@ -61,11 +64,17 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
       contributionAmount: amountNum,
       frequency,
       penaltyFee: parseFloat(penaltyFee) || 0,
+      // Keeping fee = one contribution amount per member (collected at end of circle)
       startDate: new Date().toISOString().split('T')[0],
       currentCycleIndex: 1,
       totalCycles: count,
       trustee: trustee || 'Mama Blessing',
       trusteeContact: trusteeContact || '08030001122',
+      groupAccount: {
+        bankName: groupBankName,
+        accountNumber: groupAccountNumber,
+        accountName: groupAccountName
+      },
       members,
       contributions: { 1: [] },
       payoutSchedule
@@ -81,7 +90,7 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <div>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)' }}>
-              Create New Ajo Group
+              Create New SaveCircle Group
             </h3>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               Set group name, custom location, contribution rules & members
@@ -95,11 +104,11 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
         <form onSubmit={handleSubmit}>
           {/* Group Title */}
           <div className="form-group">
-            <label>Ajo Group Name:</label>
+            <label>SaveCircle Group Name:</label>
             <input 
               type="text" 
               className="form-control"
-              placeholder="e.g. Balogun Fashion Guild, Watt Market Fabric Ajo, Wuse Market Traders..."
+              placeholder="e.g. Balogun Fashion Guild, Watt Market Fabric SaveCircle, Wuse Market Traders..."
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -140,6 +149,7 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
                 value={frequency}
                 onChange={(e) => setFrequency(e.target.value)}
               >
+                <option value="Daily">Daily</option>
                 <option value="Weekly">Weekly</option>
                 <option value="Bi-Weekly">Bi-Weekly</option>
                 <option value="Monthly">Monthly</option>
@@ -147,37 +157,40 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
             </div>
           </div>
 
-          {/* Late Penalty & Initial Member Count */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="form-group">
-              <label>Late Penalty Fee (₦):</label>
-              <input 
-                type="number" 
-                className="form-control"
-                placeholder="2000"
-                value={penaltyFee}
-                onChange={(e) => setPenaltyFee(e.target.value)}
-              />
-            </div>
+          {/* Late Penalty */}
+          <div className="form-group">
+            <label>Late Penalty Fee (₦):</label>
+            <input 
+              type="number" 
+              className="form-control"
+              placeholder="2000"
+              value={penaltyFee}
+              onChange={(e) => setPenaltyFee(e.target.value)}
+            />
+          </div>
 
-            <div className="form-group">
-              <label>Initial Member Count:</label>
-              <select 
-                className="form-control"
-                value={memberCount}
-                onChange={(e) => setMemberCount(e.target.value)}
-              >
-                <option value="4">4 Members</option>
-                <option value="6">6 Members</option>
-                <option value="8">8 Members</option>
-              </select>
-            </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem', marginBottom: '1rem' }}>
+            💡 The admin's keeping fee is <strong style={{ color: 'var(--accent-gold)' }}>one contribution amount per member</strong> (e.g. a member contributing ₦500 daily/weekly/monthly pays a ₦500 keeping fee at the end of the circle). It's collected automatically at withdrawal.
+          </div>
+
+          {/* Initial Member Count */}
+          <div className="form-group">
+            <label>Initial Member Count:</label>
+            <select 
+              className="form-control"
+              value={memberCount}
+              onChange={(e) => setMemberCount(e.target.value)}
+            >
+              <option value="4">4 Members</option>
+              <option value="6">6 Members</option>
+              <option value="8">8 Members</option>
+            </select>
           </div>
 
           {/* Trustee / Group Leader Info */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
-              <label>Trustee / Iya Ajo Name:</label>
+              <label>Trustee / Iya SaveCircle Name:</label>
               <input 
                 type="text" 
                 className="form-control"
@@ -199,12 +212,57 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
             </div>
           </div>
 
+          {/* Group Bank Account (users contribute to / withdraw from this) */}
+          <div style={{
+            border: '1px solid var(--border-card-accent)',
+            borderRadius: 'var(--radius-md)',
+            padding: '1rem',
+            marginTop: '1rem',
+            background: 'rgba(0, 135, 81, 0.05)'
+          }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Wallet className="w-4 h-4" /> Group Bank Account <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(members pay into & withdraw from this)</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group">
+                <label>Bank Name:</label>
+                <input 
+                  type="text" 
+                  className="form-control"
+                  placeholder="e.g. Zenith Bank"
+                  value={groupBankName}
+                  onChange={(e) => setGroupBankName(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label>Account Number:</label>
+                <input 
+                  type="text" 
+                  className="form-control"
+                  placeholder="e.g. 1234567890"
+                  value={groupAccountNumber}
+                  onChange={(e) => setGroupAccountNumber(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="form-group" style={{ marginTop: '1rem' }}>
+              <label>Account Name:</label>
+              <input 
+                type="text" 
+                className="form-control"
+                placeholder="e.g. SaveCircle Watt Market Pool"
+                value={groupAccountName}
+                onChange={(e) => setGroupAccountName(e.target.value)}
+              />
+            </div>
+          </div>
+
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
             <button type="button" onClick={onClose} className="btn btn-outline">
               Cancel
             </button>
             <button type="submit" className="btn btn-primary">
-              <Plus className="w-4 h-4" /> Create Ajo Group
+              <Plus className="w-4 h-4" /> Create SaveCircle Group
             </button>
           </div>
         </form>

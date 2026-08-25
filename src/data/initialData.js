@@ -1,9 +1,9 @@
-// Pre-loaded realistic demo data for Nigerian Ajo Groups (Pan-Nigerian with Calabar, Lagos, Abuja & Aba hubs)
+// Pre-loaded realistic demo data for Nigerian SaveCircle Groups (Pan-Nigerian with Calabar, Lagos, Abuja & Aba hubs)
 
 export const initialCalabarGroups = [
   {
     id: 'group-1',
-    name: 'Watt Market Fabric & Textiles Ajo',
+    name: 'Watt Market Fabric & Textiles SaveCircle',
     hubLocation: 'Watt Market, Calabar South, Cross River',
     description: 'Weekly contribution pool for fabric wholesalers and fashion designers preparing for festival and bulk inventory orders.',
     contributionAmount: 100000, // ₦100,000 per week
@@ -12,10 +12,15 @@ export const initialCalabarGroups = [
     startDate: '2026-06-01',
     currentCycleIndex: 4, // 4th cycle/week
     totalCycles: 8,
-    trustee: 'Mama Blessing Edet (Iya Ajo)',
+    trustee: 'Mama Blessing Edet (Iya SaveCircle)',
     trusteeContact: '+234 803 456 7890',
+    groupAccount: {
+      bankName: 'Zenith Bank',
+      accountNumber: '2084910290',
+      accountName: 'SaveCircle Watt Market Pool'
+    },
     members: [
-      { id: 'm1', name: 'Blessing Edet', role: 'Iya Ajo (Trustee)', phone: '08034567890', bank: 'Moniepoint Microfinance Bank', accountNumber: '6490123841', trustScore: 98, position: 1 },
+      { id: 'm1', name: 'Blessing Edet', role: 'Iya SaveCircle (Trustee)', phone: '08034567890', bank: 'Moniepoint Microfinance Bank', accountNumber: '6490123841', trustScore: 98, position: 1 },
       { id: 'm2', name: 'Effiong Bassey', role: 'Member', phone: '08021112233', bank: 'Zenith Bank', accountNumber: '2084910293', trustScore: 95, position: 2 },
       { id: 'm3', name: 'Ekaette Okon', role: 'Member', phone: '08139994455', bank: 'First Bank Nigeria', accountNumber: '3049102948', trustScore: 92, position: 3 },
       { id: 'm4', name: 'Chief Asuquo Henshaw', role: 'Member', phone: '07038887766', bank: 'OPay Nigeria', accountNumber: '7038887766', trustScore: 90, position: 4 },
@@ -79,19 +84,24 @@ export const initialCalabarGroups = [
   },
   {
     id: 'group-4',
-    name: 'Balogun Market Fashion Merchants Ajo',
+    name: 'Balogun Market Fashion Merchants SaveCircle',
     hubLocation: 'Balogun Market, Lagos Island, Lagos',
-    description: 'High-volume weekly Ajo pool for wholesale textile and footwear importers in Lagos Island.',
+    description: 'High-volume weekly SaveCircle pool for wholesale textile and footwear importers in Lagos Island.',
     contributionAmount: 150000, // ₦150,000 weekly
     frequency: 'Weekly',
     penaltyFee: 5000,
     startDate: '2026-07-05',
     currentCycleIndex: 3,
     totalCycles: 5,
-    trustee: 'Alhaja Kudirat Folami (Iya Ajo)',
+    trustee: 'Alhaja Kudirat Folami (Iya SaveCircle)',
     trusteeContact: '+234 802 333 4455',
+    groupAccount: {
+      bankName: 'GTBank',
+      accountNumber: '0192847100',
+      accountName: 'SaveCircle Balogun Market Pool'
+    },
     members: [
-      { id: 'm401', name: 'Alhaja Kudirat Folami', role: 'Iya Ajo (Trustee)', phone: '08023334455', bank: 'Moniepoint MFB', accountNumber: '5501928410', trustScore: 99, position: 1 },
+      { id: 'm401', name: 'Alhaja Kudirat Folami', role: 'Iya SaveCircle (Trustee)', phone: '08023334455', bank: 'Moniepoint MFB', accountNumber: '5501928410', trustScore: 99, position: 1 },
       { id: 'm402', name: 'Babajide Adeleke', role: 'Member', phone: '08031112233', bank: 'Guaranty Trust Bank (GTBank)', accountNumber: '0192847102', trustScore: 96, position: 2 },
       { id: 'm403', name: 'Chinyere Nwosu', role: 'Member', phone: '08129994455', bank: 'Zenith Bank', accountNumber: '2019401928', trustScore: 94, position: 3 },
       { id: 'm404', name: 'Funke Ojo', role: 'Member', phone: '07038889900', bank: 'Access Bank', accountNumber: '0019284710', trustScore: 91, position: 4 },
@@ -130,7 +140,7 @@ export const initialCalabarGroups = [
   },
   {
     id: 'group-2',
-    name: 'Marian (Ika Ika Oqua) Fresh Farmers Ajo',
+    name: 'Marian (Ika Ika Oqua) Fresh Farmers SaveCircle',
     hubLocation: 'Marian Market, Calabar Municipal, Cross River',
     description: 'Bi-weekly cooperative pool for fresh fruit, plantain, and seafood distributors operating at Marian Market.',
     contributionAmount: 25000, // ₦25,000 bi-weekly
@@ -141,6 +151,11 @@ export const initialCalabarGroups = [
     totalCycles: 6,
     trustee: 'Madam Veronica Akpan',
     trusteeContact: '+234 814 112 2334',
+    groupAccount: {
+      bankName: 'Fidelity Bank',
+      accountNumber: '5091029380',
+      accountName: 'SaveCircle Marian Farmers Pool'
+    },
     members: [
       { id: 'm201', name: 'Veronica Akpan', role: 'Group Leader', phone: '08141122334', bank: 'Moniepoint MFB', accountNumber: '5019284710', trustScore: 100, position: 1 },
       { id: 'm202', name: 'Sunday Nsa', role: 'Member', phone: '08029988776', bank: 'Fidelity Bank', accountNumber: '5091029381', trustScore: 92, position: 2 },
@@ -161,7 +176,7 @@ export const initialCalabarGroups = [
       2: [
         { memberId: 'm201', status: 'Verified', date: '2026-07-15', channel: 'Moniepoint', ref: 'MNP-MAR-02' },
         { memberId: 'm202', status: 'Verified', date: '2026-07-16', channel: 'Fidelity Transfer', ref: 'FID-90999' },
-        { memberId: 'm203', status: 'Pending Verification', date: '2026-07-30', channel: 'OPay', ref: 'OPY-00999', proofNote: 'Paid ₦25,000 for bi-weekly Ajo' },
+        { memberId: 'm203', status: 'Pending Verification', date: '2026-07-30', channel: 'OPay', ref: 'OPY-00999', proofNote: 'Paid ₦25,000 for bi-weekly SaveCircle' },
         { memberId: 'm204', status: 'Verified', date: '2026-07-15', channel: 'FCMB Mobile', ref: 'FCMB-8899' },
         { memberId: 'm205', status: 'Overdue', date: null, channel: null, ref: null },
         { memberId: 'm206', status: 'Verified', date: '2026-07-16', channel: 'Access Bank', ref: 'ACC-55999' },
@@ -189,6 +204,11 @@ export const initialCalabarGroups = [
     totalCycles: 5,
     trustee: 'Engr. Daniel Kufre',
     trusteeContact: '+234 802 888 9900',
+    groupAccount: {
+      bankName: 'Stanbic IBTC',
+      accountNumber: '0029182740',
+      accountName: 'SaveCircle Tech Guild Pool'
+    },
     members: [
       { id: 'm301', name: 'Engr. Daniel Kufre', role: 'Guild Lead', phone: '08028889900', bank: 'Stanbic IBTC', accountNumber: '0029182749', trustScore: 99, position: 1 },
       { id: 'm302', name: 'Aniekan Udo', role: 'Member', phone: '08124445566', bank: 'Guaranty Trust Bank (GTBank)', accountNumber: '0129482910', trustScore: 96, position: 2 },
@@ -230,8 +250,8 @@ export const initialCalabarGroups = [
 ];
 
 export const initialAuditLogs = [
-  { id: 'log-1', timestamp: '2026-07-30T10:15:00Z', groupName: 'Watt Market Fabric & Textiles Ajo', action: 'Log Payment', detail: 'Ekaette Okon logged pending payment of ₦100,000 via FirstBank Mobile (FB-409988)' },
-  { id: 'log-2', timestamp: '2026-07-29T14:30:00Z', groupName: 'Watt Market Fabric & Textiles Ajo', action: 'Verify Contribution', detail: 'Mama Blessing Edet verified Effiong Bassey ₦100,000 payment (ZNT-995001)' },
-  { id: 'log-3', timestamp: '2026-07-29T11:00:00Z', groupName: 'Balogun Market Fashion Merchants Ajo', action: 'Verify Contribution', detail: 'Alhaja Kudirat Folami verified Chinyere Nwosu ₦150,000 payment (ZNT-BAL-03)' },
+  { id: 'log-1', timestamp: '2026-07-30T10:15:00Z', groupName: 'Watt Market Fabric & Textiles SaveCircle', action: 'Log Payment', detail: 'Ekaette Okon logged pending payment of ₦100,000 via FirstBank Mobile (FB-409988)' },
+  { id: 'log-2', timestamp: '2026-07-29T14:30:00Z', groupName: 'Watt Market Fabric & Textiles SaveCircle', action: 'Verify Contribution', detail: 'Mama Blessing Edet verified Effiong Bassey ₦100,000 payment (ZNT-995001)' },
+  { id: 'log-3', timestamp: '2026-07-29T11:00:00Z', groupName: 'Balogun Market Fashion Merchants SaveCircle', action: 'Verify Contribution', detail: 'Alhaja Kudirat Folami verified Chinyere Nwosu ₦150,000 payment (ZNT-BAL-03)' },
   { id: 'log-4', timestamp: '2026-07-28T09:00:00Z', groupName: 'Marian Road Tech & Business Guild', action: 'Payout Disbursed', detail: '₦1,000,000 payout cycle 2 disbursed to Aniekan Udo (GTBank)' },
 ];

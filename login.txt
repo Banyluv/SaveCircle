@@ -1,0 +1,19 @@
+SaveCircle - Demo Login Credentials
+====================================
+
+SUPER ADMIN
+-----------
+Email:    superadmin@savecircle.com
+Password: superadmin123
+
+GROUP ADMINS (admin123 for all)
+------------------------------
+Email:    admin1@savecircle.com   (Mama Blessing Edet - Group 1)
+Email:    admin2@savecircle.com   (Madam Veronica Akpan - Group 2)
+Email:    admin3@savecircle.com   (Engr. Daniel Kufre - Group 3)
+Email:    admin4@savecircle.com   (Alhaja Kudirat Folami - Group 4)
+
+MEMBERS (member123 for all)
+---------------------------
+Email:    member1@savecircle.com  (Effiong Bassey - Group 1)
+Email:    member2@savecircle.com  (Ekaette Okon - Group 1)

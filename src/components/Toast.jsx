@@ -30,7 +30,7 @@ export default function Toast({ toast, onClose }) {
       bottom: '1.5rem',
       right: '1.5rem',
       zIndex: 200,
-      background: '#1e293b',
+      background: 'var(--soft-bg)',
       border: '1px solid var(--border-card)',
       borderRadius: 'var(--radius-sm)',
       padding: '0.85rem 1.2rem',

@@ -23,7 +23,7 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
       <div className="calabar-banner">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-            <span className="badge badge-success">Calabar Ajo Pool</span>
+            <span className="badge badge-success">Calabar SaveCircle Pool</span>
             <span style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
               <MapPin className="w-3.5 h-3.5" /> {group.hubLocation}
             </span>
@@ -40,7 +40,7 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
 
         {/* Quick summary box */}
         <div style={{
-          background: 'rgba(11, 19, 32, 0.7)',
+          background: 'var(--bg-surface)',
           padding: '1rem 1.25rem',
           borderRadius: 'var(--radius-sm)',
           border: '1px solid var(--border-card)',
@@ -53,8 +53,40 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
           <span style={{ fontSize: '0.8rem', color: 'var(--accent-gold)' }}>
             {group.frequency} &bull; {group.members.length} Members
           </span>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
+            Keeping fee: <strong style={{ color: '#f59e0b' }}>1 contribution per member</strong> ({formatNaira(group.contributionAmount)}) collected at the end of the circle
+          </div>
         </div>
       </div>
+
+      {/* Group bank account — where members contribute & receive withdrawals */}
+      {group.groupAccount?.accountNumber && (
+        <div className="glass-card" style={{
+          padding: '1rem 1.25rem',
+          marginTop: '1rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+          borderLeft: '4px solid var(--primary)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <Wallet className="w-5 h-5 text-emerald-400" />
+            <div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Group Account (pay contributions here)
+              </div>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', fontFamily: 'monospace', letterSpacing: '0.03em' }}>
+                {group.groupAccount.accountNumber}
+              </div>
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>
+                {group.groupAccount.accountName} • <span style={{ color: 'var(--text-muted)' }}>{group.groupAccount.bankName}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tabs list */}
       <div className="tab-list">
@@ -115,7 +147,7 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
               {group.members.map(m => (
                 <div key={m.id} style={{
-                  background: '#0b1320',
+                  background: 'var(--bg-surface)',
                   padding: '1rem',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--border-card)'
@@ -158,16 +190,35 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
                 <li>Contribution: <strong style={{ color: 'var(--primary-light)' }}>{formatNaira(group.contributionAmount)}</strong></li>
                 <li>Frequency: <strong style={{ color: 'var(--text-main)' }}>{group.frequency}</strong></li>
                 <li>Late Penalty Fee: <strong style={{ color: 'var(--danger)' }}>{formatNaira(group.penaltyFee)}</strong></li>
+                <li>Keeping Fee: <strong style={{ color: '#f59e0b' }}>1 contribution per member ({formatNaira(group.contributionAmount)})</strong></li>
                 <li>Total Pool Pot per Cycle: <strong style={{ color: 'var(--accent-gold)' }}>{formatNaira(group.contributionAmount * group.members.length)}</strong></li>
               </ul>
+
+              {group.groupAccount?.accountNumber && (
+                <div style={{ marginTop: '1.25rem' }}>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <Wallet className="w-4 h-4" /> Group Bank Account
+                  </h4>
+                  <div style={{ background: 'var(--bg-surface)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-card)' }}>
+                    <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)', fontFamily: 'monospace', letterSpacing: '0.03em' }}>
+                      {group.groupAccount.accountNumber}
+                    </div>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-main)', marginTop: '0.2rem' }}>{group.groupAccount.accountName}</p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{group.groupAccount.bankName}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                      Members pay their contributions into this account. Withdrawals are paid out from it when a member's turn arrives.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '1rem' }}>
                 Trustee / Leadership Contact
               </h3>
-              <div style={{ background: '#0b1320', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-card)' }}>
-                <p style={{ fontWeight: 700, color: 'var(--text-main)' }}>{group.trustee} (Iya Ajo / Trustee)</p>
+              <div style={{ background: 'var(--bg-surface)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-card)' }}>
+                <p style={{ fontWeight: 700, color: 'var(--text-main)' }}>{group.trustee} (Iya SaveCircle / Trustee)</p>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Contact: {group.trusteeContact}</p>
                 <p style={{ fontSize: '0.8rem', color: 'var(--primary-light)', marginTop: '0.5rem', fontStyle: 'italic' }}>
                   Responsible for verifying bank transfer session IDs, holding cash at market stand, and executing payout disbursal.

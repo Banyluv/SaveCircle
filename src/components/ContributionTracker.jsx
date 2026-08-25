@@ -5,6 +5,7 @@ import { CheckCircle2, Clock, AlertTriangle, FileText, Plus, ShieldCheck, Filter
 
 export default function ContributionTracker({ group, onLogPayment, onVerifyPayment, onViewReceipt }) {
   const { user } = useAuth();
+  const isAdminUser = ['admin', 'superadmin', 'trustee'].includes(user?.role);
   if (!group) return null;
 
   const [filterStatus, setFilterStatus] = useState('ALL');
@@ -48,7 +49,7 @@ export default function ContributionTracker({ group, onLogPayment, onVerifyPayme
 
         {/* Filter controls & Action button */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: '#0b1320', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-card)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: 'var(--bg-surface)', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-card)' }}>
             <Filter className="w-3.5 h-3.5 text-muted" />
             <select 
               value={filterStatus}
@@ -62,9 +63,11 @@ export default function ContributionTracker({ group, onLogPayment, onVerifyPayme
             </select>
           </div>
 
-          <button onClick={onLogPayment} className="btn btn-primary btn-sm">
-            <Plus className="w-4 h-4" /> Log Member Payment
-          </button>
+          {isAdminUser && (
+            <button onClick={onLogPayment} className="btn btn-primary btn-sm">
+              <Plus className="w-4 h-4" /> Log Member Payment
+            </button>
+          )}
         </div>
       </div>
 
@@ -140,7 +143,7 @@ export default function ContributionTracker({ group, onLogPayment, onVerifyPayme
                     {/* Actions */}
                     <td style={{ padding: '0.85rem 1rem', textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
-                        {isPending && user?.role === 'trustee' && (
+                        {isPending && isAdminUser && (
                           <button 
                             onClick={() => onVerifyPayment(member.id)}
                             className="btn btn-sm btn-primary"
@@ -173,7 +176,7 @@ export default function ContributionTracker({ group, onLogPayment, onVerifyPayme
                           </button>
                         )}
 
-                        {record.status === 'Overdue' && (
+                        {record.status === 'Overdue' && isAdminUser && (
                           <button 
                             onClick={onLogPayment}
                             className="btn btn-sm btn-gold"

@@ -28,7 +28,7 @@ export default function ReceiptModal({ receiptData, onClose }) {
 
         {/* Printable Receipt Paper Container */}
         <div id="receipt-paper" style={{
-          background: 'linear-gradient(180deg, #111c2e 0%, #0b1320 100%)',
+          background: 'var(--bg-surface)',
           border: '1px dashed var(--border-card-accent)',
           borderRadius: 'var(--radius-md)',
           padding: '1.5rem',
@@ -110,7 +110,7 @@ export default function ReceiptModal({ receiptData, onClose }) {
             fontSize: '0.78rem'
           }}>
             <div>
-              <span style={{ color: 'var(--text-muted)' }}>Verified By (Iya Ajo):</span>
+              <span style={{ color: 'var(--text-muted)' }}>Verified By (Iya SaveCircle):</span>
               <p style={{ fontWeight: 700, color: 'var(--primary-light)' }}>{receiptData.trustee || 'Group Trustee'}</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#6ee7b7' }}>

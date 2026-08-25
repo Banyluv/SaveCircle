@@ -6,6 +6,7 @@ import { Award, ArrowLeftRight, CheckCircle2, Calendar, MapPin, Send, Banknote }
 
 export default function PayoutQueue({ group, onOpenSwapModal, onDisbursePayout }) {
   const { user } = useAuth();
+  const isAdminUser = ['admin', 'superadmin', 'trustee'].includes(user?.role);
   if (!group) return null;
 
   const currentRecipientItem = group.payoutSchedule.find(s => s.cycle === group.currentCycleIndex);
@@ -68,7 +69,7 @@ export default function PayoutQueue({ group, onOpenSwapModal, onDisbursePayout }
               </h1>
 
               <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                {user?.role === 'trustee' && (
+                {isAdminUser && (
                   <>
                     <button 
                       onClick={onOpenSwapModal}
@@ -103,7 +104,7 @@ export default function PayoutQueue({ group, onOpenSwapModal, onDisbursePayout }
           Rotation Timeline & Schedule Queue
         </h3>
 
-        {user?.role === 'trustee' && (
+        {isAdminUser && (
           <button 
             onClick={onOpenSwapModal}
             className="btn btn-sm btn-outline"
@@ -150,7 +151,7 @@ export default function PayoutQueue({ group, onOpenSwapModal, onDisbursePayout }
                     ? 'rgba(16, 185, 129, 0.2)' 
                     : isCurrent 
                     ? 'rgba(245, 158, 11, 0.2)' 
-                    : '#1e293b',
+                    : 'var(--soft-bg)',
                   color: isDisbursed ? 'var(--primary-light)' : isCurrent ? 'var(--accent-gold)' : 'var(--text-muted)',
                   display: 'flex',
                   alignItems: 'center',

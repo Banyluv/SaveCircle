@@ -70,7 +70,7 @@ export default function AuditLog({ logs }) {
                 key={log.id}
                 style={{
                   padding: '1rem 1.2rem',
-                  background: '#0b1320',
+                  background: 'var(--bg-surface)',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--border-card)',
                   display: 'flex',
