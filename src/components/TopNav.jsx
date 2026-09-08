@@ -2,6 +2,7 @@ import React from 'react';
 import { Plus, RotateCcw, Sun, Moon, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import NotificationBell from './NotificationBell';
 
 // Top navigation bar: brand on the left, action icons on the right.
 // Actions: Create SaveCircle Pool, Reset Demo (superadmin), theme toggle, logout.
@@ -10,6 +11,17 @@ export default function TopNav({ onOpenCreateModal, onResetDemoData }) {
   const { theme, toggleTheme } = useTheme();
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
   const isSuper = user?.role === 'superadmin';
+
+  const roleLabel = user?.role === 'superadmin' ? 'Super Admin'
+    : user?.role === 'admin' ? 'Group Admin'
+    : user?.role === 'individual' ? 'Borrower'
+    : user?.role === 'cooperative' ? 'Cooperative'
+    : user?.role;
+
+  // Avoid duplication when the user's display name already equals the role label
+  // (e.g. superadmin stored as "Super Admin") → show the label only once.
+  const sameAsRole = user?.name && user.name.trim().toLowerCase() === String(roleLabel).toLowerCase();
+  const subtitle = sameAsRole ? String(roleLabel) : `${user?.name} • ${roleLabel}`;
 
   const iconBtn = {
     display: 'inline-flex',
@@ -49,7 +61,7 @@ export default function TopNav({ onOpenCreateModal, onResetDemoData }) {
             <strong>SaveCircle</strong>
           </div>
           <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
-            {user?.name} • {user?.role === 'superadmin' ? 'Super Admin' : user?.role}
+            {subtitle}
           </div>
         </div>
       </div>
@@ -84,6 +96,9 @@ export default function TopNav({ onOpenCreateModal, onResetDemoData }) {
         >
           {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
         </button>
+
+        {/* Notification bell (all signed-in users) */}
+        <NotificationBell />
 
         <button
           onClick={logout}

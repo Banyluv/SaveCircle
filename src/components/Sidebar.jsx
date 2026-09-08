@@ -1,19 +1,30 @@
 import React from 'react';
-import { Wallet, LayoutDashboard, Users, History, UserCog, PieChart } from 'lucide-react';
+import { Wallet, LayoutDashboard, Users, History, UserCog, PieChart, HandCoins } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+const roleLabel = (r) => r === 'superadmin' ? 'Super Admin' : r === 'admin' ? 'Group Admin' : r === 'individual' ? 'Borrower' : r === 'cooperative' ? 'Cooperative' : r;
 
 export default function Sidebar({ activeNav, setActiveNav }) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  // Loan-only borrowers (individuals / cooperatives) don't belong to thrift groups
+  const isLoanBorrower = user?.role === 'individual' || user?.role === 'cooperative';
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'groups', label: user?.role === 'member' ? 'My Group' : 'SaveCircle Groups', icon: Wallet },
-    { id: 'contributions', label: 'Contributions', icon: PieChart },
-    ...(isAdmin ? [{ id: 'members', label: 'Members', icon: Users }] : []),
-    ...(user?.role === 'superadmin' ? [{ id: 'admins', label: 'Admins', icon: UserCog }] : []),
-    { id: 'audit', label: 'Audit History', icon: History }
-  ];
+  // A loan-only borrower gets a focused, loans-centric nav.
+  // Group members / admins keep the full SaveCircle nav plus Loans.
+  const navItems = isLoanBorrower
+    ? [
+        { id: 'dashboard', label: 'My Loans', icon: HandCoins }
+      ]
+    : [
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { id: 'groups', label: user?.role === 'member' ? 'My Group' : 'SaveCircle Groups', icon: Wallet },
+        { id: 'contributions', label: 'Contributions', icon: PieChart },
+        { id: 'loans', label: 'Loans', icon: HandCoins },
+        ...(isAdmin ? [{ id: 'members', label: 'Members', icon: Users }] : []),
+        ...(user?.role === 'superadmin' ? [{ id: 'admins', label: 'Admins', icon: UserCog }] : []),
+        { id: 'audit', label: 'Audit History', icon: History }
+      ];
 
   return (
     <aside style={{
@@ -60,7 +71,7 @@ export default function Sidebar({ activeNav, setActiveNav }) {
               {user?.name}
             </div>
             <div style={{ fontSize: '0.72rem', color: 'var(--accent-gold)', textTransform: 'capitalize' }}>
-              {user?.role === 'superadmin' ? 'Super Admin' : user?.role}
+              {roleLabel(user?.role)}
             </div>
           </div>
         </div>

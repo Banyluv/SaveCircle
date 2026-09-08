@@ -8,10 +8,14 @@ import { connectDB } from './config/db.js';
 import groupRoutes from './routes/groupRoutes.js';
 import logRoutes from './routes/logRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import loanRoutes from './routes/loanRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import User from './models/User.js';
 import { initUsersTable } from './models/User.js';
 import { initGroupsTable } from './models/Group.js';
 import { initLogsTable } from './models/Log.js';
+import { initLoansTable } from './models/Loan.js';
+import { initNotificationsTable } from './models/Notification.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,6 +32,8 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/logs', logRoutes);
+app.use('/api/loans', loanRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Serve the built frontend (from <projectRoot>/dist) when present, so the same
 // server can be used for hosted/online access. API routes above take priority.
@@ -87,6 +93,8 @@ export const startServer = async (port = process.env.PORT || 5000, host = proces
     await initUsersTable();
     await initGroupsTable();
     await initLogsTable();
+    await initLoansTable();
+    await initNotificationsTable();
 
     const server = await new Promise((resolve) => {
         const s = app.listen(port, host, () => {

@@ -24,7 +24,11 @@ const publicUser = (user) => ({
     withdrawDate: user.withdrawDate || user.withdraw_date || null,
     withdrawalStatus: user.withdrawalStatus || user.withdrawal_status || 'none',
     withdrawalAmount: user.withdrawalAmount ?? user.withdrawal_amount ?? null,
-    withdrawalFee: user.withdrawalFee ?? user.withdrawal_fee ?? 0
+    withdrawalFee: user.withdrawalFee ?? user.withdrawal_fee ?? 0,
+    orgName: user.orgName || user.org_name || null,
+    phone: user.phone || null,
+    address: user.address || null,
+    isLoanBorrower: ['individual', 'cooperative'].includes(user.role || user.role)
 });
 
 export const loginUser = async (req, res) => {
@@ -47,8 +51,11 @@ export const loginUser = async (req, res) => {
 
 export const registerUser = async (req, res) => {
     try {
-        const { name, email, password, role, groupId, memberId, bankName, accountNumber, accountName, contributionAmount } = req.body;
+        const { name, email, password, role, groupId, memberId, bankName, accountNumber, accountName, contributionAmount, orgName, phone, address } = req.body;
         const requestedRole = role || 'member';
+
+        const loanBorrowerRoles = ['individual', 'cooperative'];
+        const isCreatingBorrower = loanBorrowerRoles.includes(requestedRole);
 
         // Only superadmin can create admins; admins can only create members in their own group
         if (req.user) {
@@ -58,9 +65,12 @@ export const registerUser = async (req, res) => {
             if (requestedRole === 'admin' && req.user.role !== 'superadmin') {
                 return res.status(403).json({ message: 'Only a superadmin can create group admins' });
             }
-            // Admin can only add members to their own group
-            if (req.user.role === 'admin' && groupId && req.user.groupId !== groupId) {
+            if (requestedRole === 'member' && groupId && req.user.role === 'admin' && req.user.groupId !== groupId) {
                 return res.status(403).json({ message: 'Admins can only add members to their own group' });
+            }
+            // Only admins/superadmin can create loan-borrower accounts
+            if (isCreatingBorrower && !['admin', 'superadmin'].includes(req.user.role)) {
+                return res.status(403).json({ message: 'Only admins can create borrower accounts' });
             }
         }
 
@@ -70,12 +80,13 @@ export const registerUser = async (req, res) => {
         }
 
         // If a member account is being created, groupId is required
+        // (loan-only borrowers: individual/cooperative do NOT need a group)
         if (requestedRole === 'member' && !groupId) {
             return res.status(400).json({ message: 'A group is required for member accounts' });
         }
 
         const user = await User.create({
-            name,
+            name: isCreatingBorrower && orgName ? orgName : name,
             email,
             password,
             role: requestedRole,
@@ -84,7 +95,10 @@ export const registerUser = async (req, res) => {
             bankName: bankName || null,
             accountNumber: accountNumber || null,
             accountName: accountName || null,
-            contributionAmount: contributionAmount != null ? contributionAmount : null
+            contributionAmount: contributionAmount != null ? contributionAmount : null,
+            orgName: orgName || null,
+            phone: phone || null,
+            address: address || null
         });
 
         if (user) {
@@ -105,11 +119,20 @@ export const getUsers = async (req, res) => {
     try {
         const users = await User.find({});
         let result = users;
+        const adminOrSuper = ['admin', 'superadmin'].includes(req.user.role);
+        const loanBorrower = ['individual', 'cooperative'].includes(req.user.role);
         if (req.user.role === 'admin') {
-            result = users.filter(u => u.groupId === req.user.groupId || u.group_id === req.user.groupId);
+            // Admins see their group's members + all loan-only borrowers
+            result = users.filter(u => (u.groupId === req.user.groupId || u.group_id === req.user.groupId) || ['individual', 'cooperative'].includes(u.role));
+        } else if (req.user.role === 'superadmin') {
+            // already all
         } else if (req.user.role === 'member') {
             result = users.filter(u => u.id === req.user.id);
+        } else if (loanBorrower) {
+            // a borrower sees only themselves
+            result = users.filter(u => u.id === req.user.id);
         }
+        void adminOrSuper;
         res.json(result.map(publicUser));
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
@@ -120,7 +143,7 @@ export const getUsers = async (req, res) => {
 export const updateUser = async (req, res) => {
     try {
         const { id } = req.params;
-        const { role, groupId, memberId, bankName, accountNumber, accountName, contributionAmount, withdrawDate, withdrawalStatus, withdrawalAmount, withdrawalFee } = req.body;
+        const { role, groupId, memberId, bankName, accountNumber, accountName, contributionAmount, withdrawDate, withdrawalStatus, withdrawalAmount, withdrawalFee, orgName, phone, address } = req.body;
         const target = await User.findById(id);
         if (!target) {
             return res.status(404).json({ message: 'User not found' });
@@ -128,20 +151,22 @@ export const updateUser = async (req, res) => {
 
         // Permission checks
         if (req.user.role === 'admin') {
-            if (target.id !== req.user.id && (target.groupId !== req.user.groupId && target.group_id !== req.user.groupId)) {
+            const isLoanBorrower = ['individual', 'cooperative'].includes(target.role);
+            // Admins can manage group members of their own group, or loan borrowers
+            if (!isLoanBorrower && target.id !== req.user.id && (target.groupId !== req.user.groupId && target.group_id !== req.user.groupId)) {
                 return res.status(403).json({ message: 'Admins can only manage users in their own group' });
             }
         }
-        if (req.user.role === 'member') {
-            // A member may only update their own bank details & contribution amount
+        if (req.user.role === 'member' || req.user.role === 'individual' || req.user.role === 'cooperative') {
+            // These may only update their own profile details
             if (target.id !== req.user.id) {
-                return res.status(403).json({ message: 'Members can only update their own profile' });
+                return res.status(403).json({ message: 'Users can only update their own profile' });
             }
-            const allowedMemberKeys = ['bankName', 'accountNumber', 'accountName', 'contributionAmount'];
+            const allowedKeys = ['bankName', 'accountNumber', 'accountName', 'contributionAmount', 'name', 'phone', 'address', 'orgName'];
             const requestedKeys = Object.keys(req.body);
-            const disallowed = requestedKeys.filter(k => k !== 'role' && k !== 'groupId' && k !== 'memberId' && !allowedMemberKeys.includes(k));
+            const disallowed = requestedKeys.filter(k => k !== 'role' && k !== 'groupId' && k !== 'memberId' && !allowedKeys.includes(k));
             if (disallowed.length > 0) {
-                return res.status(403).json({ message: `Members cannot change: ${disallowed.join(', ')}` });
+                return res.status(403).json({ message: `You cannot change: ${disallowed.join(', ')}` });
             }
         }
 
@@ -157,6 +182,9 @@ export const updateUser = async (req, res) => {
         if (withdrawalStatus !== undefined) updates.withdrawal_status = withdrawalStatus;
         if (withdrawalAmount !== undefined) updates.withdrawal_amount = withdrawalAmount;
         if (withdrawalFee !== undefined) updates.withdrawal_fee = withdrawalFee;
+        if (orgName !== undefined) updates.org_name = orgName;
+        if (phone !== undefined) updates.phone = phone;
+        if (address !== undefined) updates.address = address;
 
         let updated;
         if (useFileStore()) {
@@ -172,6 +200,9 @@ export const updateUser = async (req, res) => {
                     else if (k === 'withdrawal_status') camelUpdates.withdrawalStatus = v;
                     else if (k === 'withdrawal_amount') camelUpdates.withdrawalAmount = v;
                     else if (k === 'withdrawal_fee') camelUpdates.withdrawalFee = v;
+                    else if (k === 'org_name') camelUpdates.orgName = v;
+                    else if (k === 'phone') camelUpdates.phone = v;
+                    else if (k === 'address') camelUpdates.address = v;
                     else camelUpdates[k] = v;
                 }
                 updated = await User.update(id, camelUpdates);

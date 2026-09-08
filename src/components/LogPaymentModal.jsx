@@ -10,6 +10,12 @@ export default function LogPaymentModal({ group, onClose, onSubmitPayment }) {
   const [refNumber, setRefNumber] = useState(`TX-${Math.floor(100000 + Math.random() * 900000)}`);
   const [proofNote, setProofNote] = useState('');
   const [status, setStatus] = useState('Verified'); // Default verified or pending
+  const [amount, setAmount] = useState(group.contributionAmount ? String(group.contributionAmount) : '');
+
+  // Short label for one contribution period (based on the group's frequency)
+  const unitLabel = (group.frequency || '').toLowerCase().includes('daily') ? 'day'
+    : (group.frequency || '').toLowerCase().includes('month') ? 'month'
+    : 'week';
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -22,7 +28,8 @@ export default function LogPaymentModal({ group, onClose, onSubmitPayment }) {
       channel,
       ref: refNumber,
       proofNote,
-      status
+      status,
+      amount: Number(amount) || group.contributionAmount
     });
 
     onClose();
@@ -65,10 +72,20 @@ export default function LogPaymentModal({ group, onClose, onSubmitPayment }) {
 
           {/* Amount Box */}
           <div className="form-group">
-            <label>Contribution Amount Required:</label>
-            <div className="form-control" style={{ background: 'rgba(0, 135, 81, 0.12)', color: 'var(--primary-light)', fontWeight: 700, fontSize: '1.1rem' }}>
-              {formatNaira(group.contributionAmount)}
-            </div>
+            <label>Amount Transferred (₦):</label>
+            <input
+              type="number"
+              className="form-control"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder={String(group.contributionAmount || '')}
+              min="0"
+              required
+            />
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+              One {unitLabel} = <strong style={{ color: 'var(--primary-light)' }}>{formatNaira(group.contributionAmount)}</strong>.
+              If the member transferred more than one {unitLabel} at once (e.g. {formatNaira(group.contributionAmount * 2)} for two {unitLabel}s), enter the full amount — their plan card ticks off each covered {unitLabel} automatically.
+            </p>
           </div>
 
           {/* Payment Channel */}

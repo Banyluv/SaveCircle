@@ -5,7 +5,12 @@ import bcrypt from 'bcryptjs';
 const useFileStore = () => process.env.STORAGE_MODE === 'file';
 
 // Roles: superadmin (all groups), admin (one group), member (one group, own data)
-export const ROLES = ['superadmin', 'admin', 'member'];
+// Loan-only borrower roles (no group required):
+//   individual = a standalone person who borrows only
+//   cooperative = an organisation/cooperative that borrows
+// This mirrors the LoanApp account_type concept (individual|cooperative) but
+// keeps SaveCircle's thrift roles separate.
+export const ROLES = ['superadmin', 'admin', 'member', 'individual', 'cooperative'];
 
 // Ensure the users table exists (PostgreSQL mode only)
 export const initUsersTable = async () => {
@@ -27,6 +32,9 @@ export const initUsersTable = async () => {
             withdrawal_status TEXT DEFAULT 'none',
             withdrawal_amount NUMERIC,
             withdrawal_fee NUMERIC DEFAULT 0,
+            org_name TEXT,
+            phone TEXT,
+            address TEXT,
             created_at TIMESTAMPTZ DEFAULT NOW(),
             updated_at TIMESTAMPTZ DEFAULT NOW()
         )
@@ -43,6 +51,10 @@ export const initUsersTable = async () => {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawal_status TEXT DEFAULT 'none'`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawal_amount NUMERIC`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawal_fee NUMERIC DEFAULT 0`);
+    // Loan-only borrower fields
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS org_name TEXT`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT`);
 };
 
 export const User = {
@@ -89,7 +101,7 @@ export const User = {
         return result.rows;
     },
 
-    async create({ name, email, password, role = 'member', groupId, memberId, bankName, accountNumber, accountName, contributionAmount }) {
+    async create({ name, email, password, role = 'member', groupId, memberId, bankName, accountNumber, accountName, contributionAmount, orgName, phone, address }) {
         const salt = await bcrypt.genSalt(10);
         const hashed = await bcrypt.hash(password, salt);
         if (useFileStore()) {
@@ -103,8 +115,8 @@ export const User = {
                 email,
                 password: hashed,
                 role,
-                groupId,
-                memberId,
+                groupId: groupId || null,
+                memberId: memberId || null,
                 bankName: bankName || null,
                 accountNumber: accountNumber || null,
                 accountName: accountName || null,
@@ -113,6 +125,9 @@ export const User = {
                 withdrawDate: null,
                 withdrawalAmount: null,
                 withdrawalFee: 0,
+                orgName: orgName || null,
+                phone: phone || null,
+                address: address || null,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
@@ -120,10 +135,10 @@ export const User = {
             return user;
         }
         const result = await pool.query(
-            `INSERT INTO users (name, email, password, role, group_id, member_id, bank_name, account_number, account_name, contribution_amount)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            `INSERT INTO users (name, email, password, role, group_id, member_id, bank_name, account_number, account_name, contribution_amount, org_name, phone, address)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
              RETURNING *`,
-            [name, email, hashed, role, groupId, memberId, bankName || null, accountNumber || null, accountName || null, contributionAmount != null ? contributionAmount : null]
+            [name, email, hashed, role, groupId || null, memberId || null, bankName || null, accountNumber || null, accountName || null, contributionAmount != null ? contributionAmount : null, orgName || null, phone || null, address || null]
         );
         return result.rows[0];
     },
@@ -136,7 +151,7 @@ export const User = {
             await fileStore.upsert('users', id, updated);
             return updated;
         }
-        const cols = ['name', 'role', 'group_id', 'member_id', 'bank_name', 'account_number', 'account_name', 'contribution_amount', 'withdraw_date', 'withdrawal_status', 'withdrawal_amount', 'withdrawal_fee'];
+        const cols = ['name', 'role', 'group_id', 'member_id', 'bank_name', 'account_number', 'account_name', 'contribution_amount', 'withdraw_date', 'withdrawal_status', 'withdrawal_amount', 'withdrawal_fee', 'org_name', 'phone', 'address'];
         const sets = [];
         const values = [];
         let i = 1;

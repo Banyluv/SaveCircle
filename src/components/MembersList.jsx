@@ -85,7 +85,14 @@ export default function MembersList({ onOpenRegisterModal, groups }) {
     }
   };
 
-  const roleLabel = (r) => r === 'superadmin' ? 'Super Admin' : r === 'admin' ? 'Group Admin' : 'Member';
+  const roleLabel = (r) => r === 'superadmin' ? 'Super Admin' : r === 'admin' ? 'Group Admin' : r === 'member' ? 'Member' : r === 'individual' ? 'Borrower' : r === 'cooperative' ? 'Cooperative' : r;
+
+  const roleBadge = (r) => {
+    if (r === 'superadmin') return 'badge-warning';
+    if (r === 'admin') return 'badge-success';
+    if (r === 'individual' || r === 'cooperative') return 'badge-danger';
+    return 'badge-neutral';
+  };
 
   return (
     <div>
@@ -131,7 +138,7 @@ export default function MembersList({ onOpenRegisterModal, groups }) {
                 <tr key={u.id}>
                   <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{u.name}</td>
                   <td>{u.email}</td>
-                  <td><span className={`badge ${u.role === 'superadmin' ? 'badge-warning' : u.role === 'admin' ? 'badge-success' : 'badge-neutral'}`}>{roleLabel(u.role)}</span></td>
+                  <td><span className={`badge ${roleBadge(u.role)}`}>{roleLabel(u.role)}</span></td>
                   <td>
                     {u.bankName || u.accountNumber ? (
                       <div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authFetch } from '../utils/api';
 import { formatNaira, formatDate, getStatusBadgeClass } from '../utils/formatters';
-import { Wallet, Calendar, Award, ShieldCheck, CheckCircle2, Clock, Landmark, Send, Users } from 'lucide-react';
+import { Wallet, Calendar, Award, ShieldCheck, CheckCircle2, Clock, Landmark, Send, Users, Circle, CalendarCheck } from 'lucide-react';
 
 // Personal dashboard for a regular member: shows their own contributions,
 // their payout position, their group's account, a withdrawal panel, and
@@ -92,6 +92,32 @@ export default function MemberDashboard({ groups }) {
   const myPastPayouts = mySchedule.filter(s => s.status === 'Disbursed');
   const cycles = Object.keys(myContributions).sort((a, b) => Number(a) - Number(b));
 
+  // --- Contribution Plan (tick card) ---
+  // One unit = the amount the member accepted to contribute per day/week/month.
+  // When the admin approves a transfer, its logged amount is divided by this
+  // unit amount to work out how many units (days/weeks/months) get ticked.
+  const frequency = group.frequency || 'Weekly';
+  const freqLower = String(frequency).toLowerCase();
+  const perUnitLabel = freqLower.includes('daily') ? 'Day'
+    : freqLower.includes('month') ? 'Month'
+    : freqLower.includes('bi') ? 'Fortnight'
+    : 'Week';
+  const perUnitAmount = Number(myProfile?.contributionAmount || group.contributionAmount) || 0;
+
+  // Total money approved (Verified) by the admin, using the actual amount logged per transfer
+  let totalVerifiedAmount = 0;
+  Object.values(myContributions).forEach(cycle => {
+    (cycle || []).forEach(c => {
+      if (c.status === 'Verified') {
+        totalVerifiedAmount += Number(c.amount) || group.contributionAmount || 0;
+      }
+    });
+  });
+
+  const tickedUnits = perUnitAmount > 0 ? Math.floor(totalVerifiedAmount / perUnitAmount) : 0;
+  const partialRemainder = totalVerifiedAmount - (tickedUnits * perUnitAmount);
+  const targetUnits = Math.max(Number(group.totalCycles) || 1, tickedUnits, 1);
+
   return (
     <div>
       {/* Welcome */}
@@ -154,6 +180,67 @@ export default function MemberDashboard({ groups }) {
           </div>
         </div>
       )}
+
+      {/* My Contribution Plan — tick card (updates when the admin approves a transfer) */}
+      <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <CalendarCheck className="w-5 h-5 text-emerald-400" /> My Contribution Plan
+          </h3>
+          <span className="badge badge-success">
+            {tickedUnits} of {targetUnits} {perUnitLabel.toLowerCase()}s ticked
+          </span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
+          <div style={{ background: 'rgba(0, 135, 81, 0.08)', border: '1px solid var(--border-card-accent)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem' }}>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>My Plan</div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)' }}>
+              {formatNaira(perUnitAmount)} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>per {perUnitLabel.toLowerCase()}</span>
+            </div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{frequency} frequency</div>
+          </div>
+          <div style={{ background: 'rgba(0, 135, 81, 0.08)', border: '1px solid var(--border-card-accent)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem' }}>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Total Verified</div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--primary-light)' }}>{formatNaira(totalVerifiedAmount)}</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              {tickedUnits} {perUnitLabel.toLowerCase()}{tickedUnits === 1 ? '' : 's'} covered
+              {partialRemainder > 0 && ` + ${formatNaira(partialRemainder)} partial`}
+            </div>
+          </div>
+        </div>
+
+        {/* Tick table: one slot per Day/Week/Month */}
+        <div style={{ overflowX: 'auto' }}>
+          <table className="table" style={{ width: '100%' }}>
+            <thead>
+              <tr>
+                <th>{perUnitLabel}</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: targetUnits }, (_, i) => i + 1).map(n => {
+                const isTicked = n <= tickedUnits;
+                return (
+                  <tr key={n} style={{ opacity: isTicked ? 1 : 0.65 }}>
+                    <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{perUnitLabel} {n}</td>
+                    <td>{formatNaira(perUnitAmount)}</td>
+                    <td>
+                      {isTicked ? (
+                        <span className="badge badge-success"><CheckCircle2 className="w-3.5 h-3.5" /> Ticked</span>
+                      ) : (
+                        <span className="badge badge-neutral"><Circle className="w-3.5 h-3.5" /> Pending</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {/* Group account + withdrawal */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -257,7 +344,7 @@ export default function MemberDashboard({ groups }) {
                 return (
                   <tr key={cycle}>
                     <td>Cycle {cycle}</td>
-                    <td>{formatNaira(group.contributionAmount)}</td>
+                    <td>{formatNaira(Number(contrib?.amount) || group.contributionAmount)}</td>
                     <td>
                       <span className={`badge ${getStatusBadgeClass(contrib?.status)}`}>{contrib?.status || 'Not Paid'}</span>
                     </td>

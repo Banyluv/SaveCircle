@@ -16,6 +16,7 @@ import MemberDashboard from './components/MemberDashboard';
 import MembersList from './components/MembersList';
 import AdminsList from './components/AdminsList';
 import AiChat from './components/AiChat';
+import LoansArea from './components/Loans/LoansArea';
 import { useAuth } from './context/AuthContext';
 
 import { initialCalabarGroups, initialAuditLogs } from './data/initialData';
@@ -46,10 +47,12 @@ export default function App() {
 
   const isMember = user?.role === 'member';
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+  // Loan-only borrowers (individuals / cooperatives) — no thrift groups
+  const isLoanBorrower = user?.role === 'individual' || user?.role === 'cooperative';
 
   // Reset navigation whenever the signed-in user changes (login/logout)
   useEffect(() => {
-    setActiveNav('dashboard');
+    setActiveNav(isLoanBorrower ? 'loans' : 'dashboard');
     setSelectedGroupId(null);
   }, [user?.id]);
 
@@ -138,12 +141,13 @@ export default function App() {
   };
 
   // Log Payment submit
-  const handleSubmitPayment = ({ groupId, cycleIndex, memberId, channel, ref, proofNote, status }) => {
+  const handleSubmitPayment = ({ groupId, cycleIndex, memberId, channel, ref, proofNote, status, amount }) => {
     setGroups(prev => prev.map(g => {
       if (g.id !== groupId) return g;
 
       const member = g.members.find(m => m.id === memberId);
       const memberName = member ? member.name : 'Member';
+      const paidAmount = Number(amount) || g.contributionAmount;
 
       const currentCycleContribs = g.contributions[cycleIndex] || [];
       // Remove existing record for this member if any
@@ -155,12 +159,13 @@ export default function App() {
         date: new Date().toISOString().split('T')[0],
         channel,
         ref,
-        proofNote
+        proofNote,
+        amount: paidAmount
       };
 
       updatedContribs.push(newRecord);
 
-      addAuditLog(g.name, status === 'Verified' ? 'Verify Contribution' : 'Log Payment', `${memberName} logged payment of ₦${g.contributionAmount.toLocaleString()} via ${channel} (${ref}).`);
+      addAuditLog(g.name, status === 'Verified' ? 'Verify Contribution' : 'Log Payment', `${memberName} logged payment of ₦${paidAmount.toLocaleString()} via ${channel} (${ref}).`);
 
       return {
         ...g,
@@ -330,7 +335,7 @@ export default function App() {
           )}
 
           {/* Admin/superadmin dashboard */}
-          {!isMember && activeNav === 'dashboard' && (
+          {!isMember && !isLoanBorrower && activeNav === 'dashboard' && (
             <Dashboard
               groups={groups}
               onSelectGroup={handleSelectGroup}
@@ -339,6 +344,11 @@ export default function App() {
               logs={logs}
               onViewReceipt={(receipt) => setReceiptData(receipt)}
             />
+          )}
+
+          {/* Loan-only borrower home = Loans (also shown if they land on dashboard) */}
+          {isLoanBorrower && activeNav === 'dashboard' && (
+            <LoansArea />
           )}
 
           {activeNav === 'groups' && (
@@ -371,6 +381,10 @@ export default function App() {
 
           {activeNav === 'admins' && (
             <AdminsList groups={groups} />
+          )}
+
+          {activeNav === 'loans' && (
+            <LoansArea />
           )}
 
           {activeNav === 'audit' && (
