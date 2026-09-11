@@ -6,9 +6,27 @@ const useFileStore = () => process.env.STORAGE_MODE === 'file';
 
 // PostgreSQL connection pool.
 // Uses DATABASE_URL if provided, otherwise falls back to local defaults.
+const connectionString = process.env.DATABASE_URL
+    || 'postgres://savecircle_user:savecircle_pass_2026@127.0.0.1:5432/savecircle';
+
+// Hosted providers (Neon, Supabase, Render, ...) require TLS. Detect it from the
+// connection string so no extra env var is needed, but allow an explicit override
+// with DATABASE_SSL=true|false.
+const wantsSsl = () => {
+    if (process.env.DATABASE_SSL === 'true') return true;
+    if (process.env.DATABASE_SSL === 'false') return false;
+    if (/[?&]sslmode=(require|verify-ca|verify-full)/i.test(connectionString)) return true;
+    try {
+        const { hostname } = new URL(connectionString);
+        return !['localhost', '127.0.0.1', '::1'].includes(hostname);
+    } catch {
+        return false;
+    }
+};
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgres://savecircle_user:savecircle_pass_2026@127.0.0.1:5432/savecircle',
-    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false
+    connectionString,
+    ssl: wantsSsl() ? { rejectUnauthorized: false } : false
 });
 
 export const connectDB = async () => {

@@ -1,3 +1,4 @@
+import './config/env.js'; // must come first: loads backend/.env into process.env
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -20,7 +21,9 @@ import { initNotificationsTable } from './models/Notification.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config();
+// Load backend/.env by absolute path so the server works no matter which
+// directory it is launched from.
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 
