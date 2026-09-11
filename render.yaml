@@ -9,9 +9,9 @@
             "region": "frankfurt",
             "branch": "main",
             "autoDeployTrigger": "commit",
-            "buildCommand": "npm ci --include=dev && npm run build",
+            "buildCommand": "ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci --include=dev && npm run build",
             "startCommand": "npm start",
-            "healthCheckPath": "/",
+            "healthCheckPath": "/api/health",
             "envVars": [
                 {
                     "key": "NODE_ENV",
@@ -20,6 +20,10 @@
                 {
                     "key": "HOST",
                     "value": "0.0.0.0"
+                },
+                {
+                    "key": "ELECTRON_SKIP_BINARY_DOWNLOAD",
+                    "value": "1"
                 },
                 {
                     "key": "DATABASE_URL",

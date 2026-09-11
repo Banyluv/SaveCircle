@@ -35,6 +35,9 @@
     "electron-builder": "^26.15.3",
     "vite": "^6.0.5"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "build": {
     "appId": "com.savecircle.app",
     "productName": "SaveCircle",

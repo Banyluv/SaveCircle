@@ -38,6 +38,16 @@ app.use('/api/logs', logRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/notifications', notificationRoutes);
 
+// Lightweight health endpoint. Render's health check should point here rather
+// than at "/", so it does not depend on whether the frontend bundle exists.
+app.get('/api/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        uptime: Math.round(process.uptime()),
+        database: process.env.STORAGE_MODE === 'file' ? 'file' : 'postgres'
+    });
+});
+
 // Serve the built frontend (from <projectRoot>/dist) when present, so the same
 // server can be used for hosted/online access. API routes above take priority.
 const distDir = path.resolve(__dirname, '..', 'dist');

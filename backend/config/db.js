@@ -35,12 +35,23 @@ export const connectDB = async () => {
         console.log('Using file-based storage (offline desktop mode)');
         return null;
     }
+    if (!process.env.DATABASE_URL) {
+        console.error(
+            'DATABASE_URL is not set.\n' +
+            '  Hosted deployments (Render, Railway, ...) must provide DATABASE_URL\n' +
+            '  as an environment variable. The built-in fallback points at a local\n' +
+            '  PostgreSQL instance, which does not exist in a container.'
+        );
+    }
     try {
         const client = await pool.connect();
         console.log(`PostgreSQL Connected: ${client.host}:${client.port}/${client.database}`);
         client.release();
     } catch (error) {
         console.error(`Error connecting to PostgreSQL: ${error.message}`);
+        console.error(`  Host: ${pool.options.host || '(from DATABASE_URL)'}`);
+        console.error('  Check that DATABASE_URL is set, reachable from this host, and');
+        console.error('  that the database allows external/SSL connections.');
         process.exit(1);
     }
 };
