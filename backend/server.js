@@ -9,7 +9,15 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 const PORT = process.env.PORT || 5000;
 
-startServer(PORT).catch((error) => {
+// Hosted platforms (Render, Railway, Fly, ...) route traffic to the container
+// from outside, so the server must bind all interfaces. Locally we stay on
+// 127.0.0.1 (what the desktop shell expects). HOST always wins if set.
+const isHosted = process.env.RENDER
+    || process.env.NODE_ENV === 'production'
+    || process.env.HOSTED === 'true';
+const HOST = process.env.HOST || (isHosted ? '0.0.0.0' : '127.0.0.1');
+
+startServer(PORT, HOST).catch((error) => {
     console.error('Failed to start server:', error);
     process.exit(1);
 });

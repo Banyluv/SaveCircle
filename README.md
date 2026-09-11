@@ -98,5 +98,51 @@ This application comes pre-configured with authentic Nigerian commerce hubs and 
 
 ---
 
+## ☁️ Deploying to Render
+
+The Express backend serves the built React app from `dist/`, so a **single web service** hosts both the API and the frontend. No separate static site is needed.
+
+### 1. Create the service
+
+Push this repo to GitHub, then in the Render dashboard choose **New → Web Service** and connect the repository.
+
+| Setting | Value |
+|---|---|
+| Runtime | Node |
+| Build Command | `npm ci --include=dev && npm run build` |
+| Start Command | `npm start` |
+| Health Check Path | `/` |
+| Instance Type | Free (or Starter) |
+
+`--include=dev` is required: Vite and the React plugin are dev dependencies, and the frontend cannot be built without them.
+
+A `render.yaml` blueprint is included, so **New → Blueprint** works too — it declares the same settings plus the environment variables below.
+
+### 2. Set environment variables
+
+| Key | Value |
+|---|---|
+| `DATABASE_URL` | Your Postgres connection string (e.g. Neon, with `sslmode=require`) |
+| `JWT_SECRET` | A long random string — **do not reuse the dev default** |
+| `NODE_ENV` | `production` |
+| `HOST` | `0.0.0.0` |
+
+`HOST` matters: Render routes traffic to the container from outside, so the server must bind all interfaces rather than `127.0.0.1`. `server.js` detects this automatically via `NODE_ENV`, `HOST`, or Render's own `RENDER` variable, but setting it explicitly is safest.
+
+`PORT` is provided by Render — do not set it.
+
+### 3. Database
+
+Any hosted Postgres works. Tables and the default seed users are created automatically on first boot, so no migration step is needed.
+
+### 4. Notes
+
+- **`backend/.env` is gitignored and is not deployed.** All configuration comes from the environment variables above.
+- **Free instances sleep** after ~15 minutes idle; the first request afterwards takes up to a minute to wake.
+- **Uploads/data persist** because all state lives in Postgres, not the container filesystem — which is ephemeral on Render and resets on every deploy.
+- Change the seeded account passwords before sharing the URL publicly.
+
+---
+
 ## 📄 License
 Created for community financial empowerment in Nigeria.
