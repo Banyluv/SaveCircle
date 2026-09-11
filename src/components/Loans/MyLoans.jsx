@@ -6,7 +6,10 @@ import { loanBadge, LOAN_TYPE_LABELS } from './loanMeta';
 import ApplyLoanModal from './ApplyLoanModal';
 import LoanDetailModal from './LoanDetailModal';
 
-const STATUS_FILTERS = ['', 'pending', 'disbursed', 'active', 'completed', 'rejected'];
+// Status tabs. An application is created as 'pending' and becomes 'disbursed'
+// when approved (there is no separate 'active' application status), so the
+// filters must match the values actually stored or a tab shows nothing.
+const STATUS_FILTERS = ['', 'pending', 'disbursed', 'completed', 'rejected'];
 
 export default function MyLoans({ isAdmin }) {
   const [loans, setLoans] = useState([]);

@@ -21,6 +21,32 @@ const requireDb = (req, res) => {
 
 const isAdminRole = (user) => user && ['admin', 'superadmin'].includes(user.role);
 
+// Postgres integer columns reject non-numeric strings with a 22P02 error, which
+// would surface as a 500. Validate route params up front and return 400 instead.
+const parseIntParam = (value) => {
+    if (value === undefined || value === null || value === '') return null;
+    if (!/^\d+$/.test(String(value))) return null;
+    const n = Number(value);
+    return Number.isSafeInteger(n) ? n : null;
+};
+
+// A route param that must be a positive integer id.
+const requireIdParam = (req, res, name = 'id') => {
+    const id = parseIntParam(req.params[name]);
+    if (id === null) {
+        res.status(400).json({ success: false, message: `Invalid ${name}: must be a numeric id` });
+        return null;
+    }
+    return id;
+};
+
+// Parse a money amount, rejecting NaN/Infinity/negatives.
+const parseAmount = (value) => {
+    const n = typeof value === 'number' ? value : parseFloat(value);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    return +n.toFixed(2);
+};
+
 // ─── Quick Calculator (public) ───────────────────────────────────────────────
 export const calculate = async (req, res) => {
     if (!requireDb(req, res)) return;
@@ -255,8 +281,9 @@ export const getMyLoans = async (req, res) => {
 // ─── Loan detail (borrower or admin) ─────────────────────────────────────────
 export const getLoanDetails = async (req, res) => {
     if (!requireDb(req, res)) return;
+    const id = requireIdParam(req, res, 'id');
+    if (id === null) return;
     try {
-        const { id } = req.params;
 
         const loanResult = await pool.query(
             `SELECT la.*, lp.name as product_name, lp.late_payment_penalty_percent, lp.grace_period_days,
@@ -275,7 +302,6 @@ export const getLoanDetails = async (req, res) => {
         if (!loanResult.rows[0]) {
             return res.status(404).json({ success: false, message: 'Loan not found' });
         }
-
         const loan = loanResult.rows[0];
         const isOwner = String(loan.borrower_id) === String(req.user.id);
         const isAdmin = isAdminRole(req.user);
@@ -426,10 +452,11 @@ export const reviewLoan = async (req, res) => {
     if (!isAdminRole(req.user)) {
         return res.status(403).json({ success: false, message: 'Admin access required' });
     }
+    const id = requireIdParam(req, res, 'id');
+    if (id === null) return;
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const { id } = req.params;
         const { action, rejection_reason } = req.body;
 
         const loanRes = await client.query('SELECT * FROM loan_applications WHERE id = $1', [id]);
@@ -591,10 +618,12 @@ export const getAdminStats = async (req, res) => {
 // ─── Submit a manual repayment (borrower) ────────────────────────────────────
 export const submitRepayment = async (req, res) => {
     if (!requireDb(req, res)) return;
+    const id = requireIdParam(req, res, 'id');
+    if (id === null) return;
     try {
-        const { id } = req.params; // loan id
         const { amount, channel, reference, proof_note } = req.body;
-        if (!amount || Number(amount) <= 0) {
+        const parsedAmount = parseAmount(amount);
+        if (parsedAmount === null) {
             return res.status(400).json({ success: false, message: 'A valid repayment amount is required' });
         }
 
@@ -613,11 +642,36 @@ export const submitRepayment = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Only active/disbursed loans can be repaid' });
         }
 
+        // Reject repayments that exceed what is still owed. Previously the excess
+        // was quietly dropped when the schedule was applied, so a borrower could
+        // pay too much and lose the difference with no warning.
+        const accountRes = await pool.query(
+            `SELECT outstanding_balance FROM loan_accounts WHERE loan_id = $1`, [id]
+        );
+        const outstanding = Number(accountRes.rows[0]?.outstanding_balance ?? 0);
+        if (outstanding <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'This loan is already fully repaid — no payment is needed.'
+            });
+        }
+        if (parsedAmount > outstanding) {
+            return res.status(400).json({
+                success: false,
+                message: `Amount exceeds the outstanding balance of ₦${outstanding.toLocaleString()}`,
+                data: { outstanding_balance: outstanding }
+            });
+        }
+
+        // Always attribute the repayment to the loan's borrower, not to whoever
+        // submitted it. When an admin records a repayment for a borrower, using
+        // req.user.id stored the ADMIN as the payer and broke the borrower's
+        // repayment history (and their notifications).
         const result = await pool.query(
             `INSERT INTO loan_repayments (loan_id, borrower_id, amount, channel, reference, proof_note, status)
              VALUES ($1,$2,$3,$4,$5,$6,'pending')
              RETURNING *`,
-            [id, req.user.id, amount, channel || 'Manual Transfer', reference || null, proof_note || null]
+            [id, loan.borrower_id, parsedAmount, channel || 'Manual Transfer', reference || null, proof_note || null]
         );
 
         // Notify admins a repayment is awaiting verification
@@ -627,8 +681,8 @@ export const submitRepayment = async (req, res) => {
             await notifyAdmins({
                 type: 'repayment_submitted',
                 title: 'Repayment Submitted',
-                message: `${myName} submitted a repayment of ₦${Number(amount).toLocaleString()}${channel ? ` via ${channel}` : ''} on loan ${loan.application_number}.`,
-                link: `/loans`
+                message: `${myName} submitted a repayment of ₦${Number(parsedAmount).toLocaleString()}${channel ? ` via ${channel}` : ''} on loan ${loan.application_number}.`,
+                link: '/loans'
             });
         } catch (notifErr) {
             console.error('Notification dispatch error (repay):', notifErr);
@@ -647,10 +701,11 @@ export const verifyRepayment = async (req, res) => {
     if (!isAdminRole(req.user)) {
         return res.status(403).json({ success: false, message: 'Admin access required' });
     }
+    const rid = requireIdParam(req, res, 'rid');
+    if (rid === null) return;
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const { rid } = req.params;
 
         const repayRes = await client.query(
             `SELECT * FROM loan_repayments WHERE id = $1`, [rid]

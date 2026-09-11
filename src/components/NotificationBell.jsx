@@ -3,6 +3,11 @@ import { Bell, CheckCheck, CheckCircle2, XCircle, HandCoins, FileText, BellRing 
 import { notificationAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
+// Nav ids that notifications are allowed to jump to.
+const NAV_SEGMENTS = new Set([
+  'dashboard', 'groups', 'contributions', 'loans', 'members', 'admins', 'audit'
+]);
+
 // Map notification type → icon + color for the dropdown list.
 const typeMeta = (type) => {
   switch (type) {
@@ -95,6 +100,22 @@ export default function NotificationBell({ onNavigate }) {
     }
   };
 
+  // Notifications store a link such as '/loans', while the app navigates by nav
+  // id ('loans'). Resolve it here so clicking a notification actually moves the
+  // user to the relevant module instead of doing nothing.
+  const navTargetFor = (n) => {
+    const link = n?.link || '';
+    const match = String(link).match(/^\/([a-z0-9-]+)/i);
+    if (match) {
+      const segment = match[1].toLowerCase();
+      if (NAV_SEGMENTS.has(segment)) return segment;
+    }
+    // Fall back to the notification type.
+    if (n?.type === 'loan_applied' || n?.type === 'repayment_submitted') return 'loans';
+    if (n?.type?.startsWith('loan_') || n?.type === 'repayment_verified') return 'loans';
+    return null;
+  };
+
   const handleItemClick = async (n) => {
     if (!n.is_read) {
       try {
@@ -106,7 +127,8 @@ export default function NotificationBell({ onNavigate }) {
       }
     }
     setOpen(false);
-    if (onNavigate) onNavigate(n);
+    const target = navTargetFor(n);
+    if (onNavigate && target) onNavigate(target);
   };
 
   return (

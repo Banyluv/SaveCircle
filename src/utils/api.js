@@ -16,8 +16,23 @@ export const apiFetch = (path, options = {}) => {
   return fetch(url, options);
 };
 
+// Global 401 handler.
+// When the API rejects our token (expired/corrupt, or the user no longer
+// exists — e.g. after switching databases), we must drop the stale session and
+// return to the login screen. Without this the app stays "logged in" but every
+// request fails with "Not authorized, token failed" and the user is stuck.
+let onUnauthorized = null;
+export const setUnauthorizedHandler = (fn) => { onUnauthorized = fn; };
+
+const handleStatus = (res) => {
+  if (res.status === 401 && onUnauthorized) {
+    try { onUnauthorized(); } catch (e) { /* ignore */ }
+  }
+  return res;
+};
+
 // Fetch with the stored auth token attached (for protected endpoints).
-export const authFetch = (path, options = {}) => {
+export const authFetch = async (path, options = {}) => {
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
   const headers = { ...(options.headers || {}) };
   try {
@@ -29,7 +44,8 @@ export const authFetch = (path, options = {}) => {
   } catch (e) {
     // ignore
   }
-  return fetch(url, { ...options, headers });
+  const res = await fetch(url, { ...options, headers });
+  return handleStatus(res);
 };
 
 // ─── Loans API helpers ───────────────────────────────────────────────────────

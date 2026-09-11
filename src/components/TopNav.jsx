@@ -6,7 +6,7 @@ import NotificationBell from './NotificationBell';
 
 // Top navigation bar: brand on the left, action icons on the right.
 // Actions: Create SaveCircle Pool, Reset Demo (superadmin), theme toggle, logout.
-export default function TopNav({ onOpenCreateModal, onResetDemoData }) {
+export default function TopNav({ onOpenCreateModal, onResetDemoData, onNavigate }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
@@ -98,7 +98,7 @@ export default function TopNav({ onOpenCreateModal, onResetDemoData }) {
         </button>
 
         {/* Notification bell (all signed-in users) */}
-        <NotificationBell />
+        <NotificationBell onNavigate={onNavigate} />
 
         <button
           onClick={logout}

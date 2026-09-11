@@ -26,11 +26,23 @@ export default function LoanDetailModal({ loanId, onClose, isAdmin, onChanged })
 
   const submitRepayment = async (e) => {
     e.preventDefault();
-    setBusy(true);
     setError('');
+    const amount = Number(repay.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError('Enter a valid repayment amount greater than zero.');
+      return;
+    }
+    // Guard against overpayment client-side so the user sees the limit before
+    // submitting; the server enforces the same rule.
+    const outstanding = Number(data?.loan?.outstanding_balance ?? 0);
+    if (outstanding > 0 && amount > outstanding) {
+      setError(`Amount exceeds the outstanding balance of ${formatNaira(outstanding)}.`);
+      return;
+    }
+    setBusy(true);
     try {
       await loanAPI.submitRepayment(loanId, {
-        amount: Number(repay.amount),
+        amount,
         channel: repay.channel,
         reference: repay.reference || null,
         proof_note: repay.proof_note || null
@@ -62,8 +74,13 @@ export default function LoanDetailModal({ loanId, onClose, isAdmin, onChanged })
   };
 
   const review = async (action) => {
-    const reason = action === 'reject' ? (window.prompt('Rejection reason:') || 'Declined') : null;
-    if (action === 'reject' && reason === null) return;
+    let reason = null;
+    if (action === 'reject') {
+      const answer = window.prompt('Rejection reason:');
+      // Cancel (null) must abort the action, not submit a default rejection.
+      if (answer === null) return;
+      reason = answer.trim() || 'Declined';
+    }
     setBusy(true);
     setError('');
     try {

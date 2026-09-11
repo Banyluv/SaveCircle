@@ -327,6 +327,7 @@ export default function App() {
         <TopNav
           onOpenCreateModal={() => setIsCreateModalOpen(true)}
           onResetDemoData={handleResetDemoData}
+          onNavigate={handleNav}
         />
         <div className="app-container" style={{ flex: 1, padding: '1.5rem 1.75rem' }}>
           {/* Member personal dashboard */}

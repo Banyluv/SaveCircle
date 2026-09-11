@@ -40,8 +40,10 @@ export default function AdminLoans() {
   const review = async (id, action) => {
     let reason = null;
     if (action === 'reject') {
-      reason = window.prompt('Rejection reason:') || 'Declined';
-      if (reason === null) return;
+      const answer = window.prompt('Rejection reason:');
+      // null = user pressed Cancel → abort the action entirely.
+      if (answer === null) return;
+      reason = answer.trim() || 'Declined';
     }
     const verb = action === 'approve' ? 'Approve & disburse this loan? This will create its repayment schedule.' : 'Reject this loan?';
     if (!window.confirm(verb)) return;

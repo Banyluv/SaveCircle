@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
-    const { login } = useAuth();
+    const { login, sessionMessage, setSessionMessage } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -13,6 +13,7 @@ export default function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSessionMessage && setSessionMessage('');
         setLoading(true);
         const result = await login(email, password);
         if (!result.success) {
@@ -95,6 +96,12 @@ export default function Login() {
                         Sign in to your <strong>SaveCircle</strong> account
                     </p>
                 </div>
+
+                {sessionMessage && (
+                    <div style={{ background: 'rgba(245, 158, 11, 0.12)', color: 'var(--accent-gold)', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.88rem', textAlign: 'center', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                        {sessionMessage}
+                    </div>
+                )}
 
                 {error && (
                     <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
