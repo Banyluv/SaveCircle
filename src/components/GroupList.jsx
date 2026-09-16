@@ -176,7 +176,7 @@ export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) 
                 <div style={{
                   marginTop: '1rem',
                   paddingTop: '0.75rem',
-                  borderTop: '1px solid rgba(255,255,255,0.06)',
+                  borderTop: '1px solid var(--border-card)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',

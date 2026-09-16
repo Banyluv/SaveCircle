@@ -17,7 +17,25 @@ const isHosted = process.env.RENDER
     || process.env.HOSTED === 'true';
 const HOST = process.env.HOST || (isHosted ? '0.0.0.0' : '127.0.0.1');
 
-startServer(PORT, HOST).catch((error) => {
+startServer(PORT, HOST).then((server) => {
+    if (!server) return;
+
+    // Graceful shutdown: hosting platforms send SIGTERM before replacing a
+    // container. Stop accepting connections so in-flight requests can finish
+    // instead of being cut off mid-response.
+    const shutdown = (signal) => {
+        console.log(`${signal} received — shutting down gracefully...`);
+        server.close(() => {
+            console.log('HTTP server closed.');
+            process.exit(0);
+        });
+        // Safety net if a connection refuses to drain.
+        setTimeout(() => process.exit(1), 10000).unref();
+    };
+
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+}).catch((error) => {
     console.error('Failed to start server:', error);
     process.exit(1);
 });

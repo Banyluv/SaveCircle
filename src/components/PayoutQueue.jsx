@@ -34,7 +34,7 @@ export default function PayoutQueue({ group, onOpenSwapModal, onDisbursePayout }
       {/* Current Recipient Highlight Banner */}
       {currentRecipientItem && currentRecipientMember && (
         <div style={{
-          background: 'linear-gradient(135deg, rgba(0, 135, 81, 0.3) 0%, rgba(245, 158, 11, 0.2) 100%)',
+          background: 'linear-gradient(135deg, rgba(0, 135, 81, 0.22) 0%, rgba(0, 135, 81, 0.08) 100%)',
           border: '1px solid var(--primary-light)',
           borderRadius: 'var(--radius-md)',
           padding: '1.5rem',
@@ -148,9 +148,9 @@ export default function PayoutQueue({ group, onOpenSwapModal, onDisbursePayout }
                   height: '38px',
                   borderRadius: '50%',
                   background: isDisbursed 
-                    ? 'rgba(16, 185, 129, 0.2)' 
+                    ? 'var(--success-bg)' 
                     : isCurrent 
-                    ? 'rgba(245, 158, 11, 0.2)' 
+                    ? 'var(--warning-bg)' 
                     : 'var(--soft-bg)',
                   color: isDisbursed ? 'var(--primary-light)' : isCurrent ? 'var(--accent-gold)' : 'var(--text-muted)',
                   display: 'flex',

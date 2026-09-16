@@ -160,7 +160,7 @@ export default function MembersList({ onOpenRegisterModal, groups }) {
                         {u.withdrawDate && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Date: {u.withdrawDate}</div>}
                         {u.contributionAmount ? (
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                            Fee: <strong style={{ color: '#f59e0b' }}>{formatNaira(Number(u.contributionAmount))}</strong> (1 contribution)
+                            Fee: <strong style={{ color: 'var(--accent-gold)' }}>{formatNaira(Number(u.contributionAmount))}</strong> (1 contribution)
                           </div>
                         ) : null}
                         {u.withdrawalStatus === 'requested' && (
@@ -203,7 +203,7 @@ export default function MembersList({ onOpenRegisterModal, groups }) {
                           </>
                         )}
                         {u.id !== user?.id && (
-                          <button onClick={() => handleDelete(u.id)} title="Remove user" style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', display: 'inline-flex' }}>
+                          <button onClick={() => handleDelete(u.id)} title="Remove user" style={{ background: 'none', border: 'none', color: 'var(--danger-text)', cursor: 'pointer', display: 'inline-flex' }}>
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}

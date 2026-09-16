@@ -64,7 +64,7 @@ export default function Login() {
                 position: 'relative',
                 zIndex: 1,
                 borderRadius: 'var(--radius-lg)',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.45), var(--shadow-glow)',
+                boxShadow: '0 20px 60px rgba(6, 78, 48, 0.18), var(--shadow-glow)',
                 border: '1px solid var(--border-card)'
             }}>
                 <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
@@ -72,7 +72,7 @@ export default function Login() {
                         display: 'inline-flex',
                         padding: '0.5rem',
                         borderRadius: 'var(--radius-md)',
-                        background: 'linear-gradient(135deg, rgba(0, 135, 81, 0.15), rgba(245, 158, 11, 0.1))',
+                        background: 'linear-gradient(135deg, rgba(0, 135, 81, 0.15), rgba(0, 135, 81, 0.06))',
                         border: '1px solid var(--border-card-accent)',
                         marginBottom: '1.25rem',
                         boxShadow: 'var(--shadow-glow)'
@@ -98,13 +98,13 @@ export default function Login() {
                 </div>
 
                 {sessionMessage && (
-                    <div style={{ background: 'rgba(245, 158, 11, 0.12)', color: 'var(--accent-gold)', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.88rem', textAlign: 'center', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                    <div style={{ background: 'var(--warning-bg)', color: 'var(--warning-text)', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.88rem', textAlign: 'center', border: '1px solid var(--warning-border)' }}>
                         {sessionMessage}
                     </div>
                 )}
 
                 {error && (
-                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+                    <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-text)', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center', border: '1px solid var(--danger-border)' }}>
                         {error}
                     </div>
                 )}

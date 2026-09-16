@@ -91,7 +91,7 @@ export default function AdminsList({ groups }) {
                     </button>
                   )}
                   {u.role === 'admin' && u.email !== 'superadmin@savecircle.com' && (
-                    <button onClick={() => removeAdmin(u.id)} title="Remove" style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer' }}>
+                    <button onClick={() => removeAdmin(u.id)} title="Remove" style={{ background: 'none', border: 'none', color: 'var(--danger-text)', cursor: 'pointer' }}>
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}

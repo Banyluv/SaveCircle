@@ -109,7 +109,7 @@ export default function LoanDetailModal({ loanId, onClose, isAdmin, onChanged })
         </div>
 
         {error && (
-          <div style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>
+          <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-text)', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>
         )}
 
         {loading && <p style={{ color: 'var(--text-muted)' }}>Loading…</p>}
@@ -142,10 +142,10 @@ export default function LoanDetailModal({ loanId, onClose, isAdmin, onChanged })
                 <div><span style={{ color: 'var(--text-muted)' }}>Tenure</span><br /><strong style={{ color: 'var(--text-main)' }}>{data.loan.tenure_months} months</strong></div>
                 <div><span style={{ color: 'var(--text-muted)' }}>Frequency</span><br /><strong style={{ color: 'var(--text-main)' }}>{data.loan.repayment_frequency}</strong></div>
                 {data.loan.outstanding_balance != null && (
-                  <div><span style={{ color: 'var(--text-muted)' }}>Outstanding</span><br /><strong style={{ color: '#ef4444' }}>{formatNaira(data.loan.outstanding_balance)}</strong></div>
+                  <div><span style={{ color: 'var(--text-muted)' }}>Outstanding</span><br /><strong style={{ color: 'var(--danger)' }}>{formatNaira(data.loan.outstanding_balance)}</strong></div>
                 )}
                 {data.loan.total_paid != null && (
-                  <div><span style={{ color: 'var(--text-muted)' }}>Total Paid</span><br /><strong style={{ color: '#10b981' }}>{formatNaira(data.loan.total_paid)}</strong></div>
+                  <div><span style={{ color: 'var(--text-muted)' }}>Total Paid</span><br /><strong style={{ color: 'var(--success)' }}>{formatNaira(data.loan.total_paid)}</strong></div>
                 )}
                 {data.loan.next_due_date && (
                   <div><span style={{ color: 'var(--text-muted)' }}>Next Due</span><br /><strong style={{ color: 'var(--text-main)' }}>{formatDate(data.loan.next_due_date)}</strong></div>
@@ -158,7 +158,7 @@ export default function LoanDetailModal({ loanId, onClose, isAdmin, onChanged })
                 </p>
               )}
               {data.loan.rejection_reason && (
-                <p style={{ fontSize: '0.85rem', color: '#fca5a5', marginTop: '0.5rem' }}>Rejection reason: {data.loan.rejection_reason}</p>
+                <p style={{ fontSize: '0.85rem', color: 'var(--danger-text)', marginTop: '0.5rem' }}>Rejection reason: {data.loan.rejection_reason}</p>
               )}
 
               <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '1rem' }}>

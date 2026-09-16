@@ -100,7 +100,7 @@ export default function ContributionTracker({ group, onLogPayment, onVerifyPayme
                 return (
                   <tr 
                     key={member.id}
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.2s' }}
+                    style={{ borderBottom: '1px solid var(--border-card)', transition: 'background 0.2s' }}
                   >
                     {/* Member */}
                     <td style={{ padding: '0.85rem 1rem' }}>

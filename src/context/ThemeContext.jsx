@@ -4,10 +4,10 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
     const [theme, setTheme] = useState(() => {
-        // Persisted choice wins; otherwise default to DARK (brand default).
+        // Persisted choice wins; otherwise default to LIGHT (green & white brand default).
         const saved = localStorage.getItem('savecircle_theme');
         if (saved === 'light' || saved === 'dark') return saved;
-        return 'dark';
+        return 'light';
     });
 
     useEffect(() => {

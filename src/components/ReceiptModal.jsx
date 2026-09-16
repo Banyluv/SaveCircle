@@ -14,7 +14,7 @@ export default function ReceiptModal({ receiptData, onClose }) {
       <div 
         className="modal-content" 
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: '500px', background: '#0d1524', border: '1px solid var(--border-card-accent)' }}
+        style={{ maxWidth: '500px', background: 'var(--bg-surface)', border: '1px solid var(--border-card-accent)' }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -35,7 +35,7 @@ export default function ReceiptModal({ receiptData, onClose }) {
           position: 'relative'
         }}>
           {/* Top Stamp */}
-          <div style={{ textAlign: 'center', marginBottom: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-card)', paddingBottom: '1rem' }}>
             <span className="badge badge-success" style={{ marginBottom: '0.5rem' }}>
               Official Nigerian Thrift Record
             </span>
@@ -49,8 +49,8 @@ export default function ReceiptModal({ receiptData, onClose }) {
 
           {/* Amount Paid Box */}
           <div style={{
-            background: 'rgba(0, 135, 81, 0.15)',
-            border: '1px solid rgba(0, 135, 81, 0.4)',
+            background: 'var(--success-bg)',
+            border: '1px solid var(--success-border)',
             borderRadius: 'var(--radius-sm)',
             padding: '1rem',
             textAlign: 'center',
@@ -93,7 +93,7 @@ export default function ReceiptModal({ receiptData, onClose }) {
           </div>
 
           {receiptData.proofNote && (
-            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: '0.8rem' }}>
+            <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-card)', fontSize: '0.8rem' }}>
               <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Member Note:</span>
               <p style={{ color: 'var(--text-main)', fontStyle: 'italic' }}>"{receiptData.proofNote}"</p>
             </div>
@@ -113,7 +113,7 @@ export default function ReceiptModal({ receiptData, onClose }) {
               <span style={{ color: 'var(--text-muted)' }}>Verified By (Iya SaveCircle):</span>
               <p style={{ fontWeight: 700, color: 'var(--primary-light)' }}>{receiptData.trustee || 'Group Trustee'}</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: '#6ee7b7' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--success-text)' }}>
               <CheckCircle2 className="w-4 h-4" /> VERIFIED
             </div>
           </div>

@@ -60,9 +60,9 @@ export default function Sidebar({ activeNav, setActiveNav }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           <div style={{
             width: '36px', height: '36px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--primary), var(--accent-gold))',
+            background: 'var(--brand-gradient)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '0.9rem', fontWeight: 700, color: '#fff'
+            fontSize: '0.9rem', fontWeight: 700, color: 'var(--on-brand)'
           }}>
             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
@@ -93,7 +93,7 @@ export default function Sidebar({ activeNav, setActiveNav }) {
                 padding: '0.65rem 0.9rem',
                 borderRadius: 'var(--radius-sm)',
                 border: 'none',
-                background: active ? 'rgba(0, 135, 81, 0.18)' : 'transparent',
+                background: active ? 'var(--primary-glow)' : 'transparent',
                 color: active ? 'var(--primary-light)' : 'var(--text-muted)',
                 fontSize: '0.9rem',
                 fontWeight: active ? 700 : 500,

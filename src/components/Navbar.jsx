@@ -27,7 +27,7 @@ export default function Navbar({ activeTab, setActiveTab, onOpenCreateModal, onR
             width: '42px',
             height: '42px',
             borderRadius: 'var(--radius-sm)',
-            background: 'linear-gradient(135deg, var(--primary) 0%, #00a865 100%)',
+            background: 'var(--brand-gradient)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

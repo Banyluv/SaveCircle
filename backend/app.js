@@ -6,6 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { connectDB } from './config/db.js';
+import pool from './config/db.js';
 import groupRoutes from './routes/groupRoutes.js';
 import logRoutes from './routes/logRoutes.js';
 import authRoutes from './routes/authRoutes.js';
@@ -27,8 +28,30 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Hosted platforms (Render, Railway, Fly, Heroku, ...) terminate TLS at a proxy
+// and forward the client IP in X-Forwarded-*. Trusting the first proxy hop lets
+// Express report the real client IP / protocol.
+app.set('trust proxy', 1);
+// Do not advertise the framework version.
+app.disable('x-powered-by');
+
+// Baseline security headers (no extra dependency required).
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
+
+// CORS: the built frontend is served by this same server, so cross-origin
+// requests are not required. Set CORS_ORIGIN to a comma-separated allowlist to
+// permit specific external origins; unset keeps the permissive default so the
+// desktop shell and local dev server keep working.
+const corsOrigins = (process.env.CORS_ORIGIN || '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+app.use(cors(corsOrigins.length ? { origin: corsOrigins } : undefined));
 app.use(express.json());
 
 // Routes
@@ -40,30 +63,75 @@ app.use('/api/notifications', notificationRoutes);
 
 // Lightweight health endpoint. Render's health check should point here rather
 // than at "/", so it does not depend on whether the frontend bundle exists.
-app.get('/api/health', (req, res) => {
-    res.json({
+const distDir = path.resolve(__dirname, '..', 'dist');
+const hasDist = fs.existsSync(distDir);
+
+app.get('/api/health', async (req, res) => {
+    const payload = {
         status: 'ok',
         uptime: Math.round(process.uptime()),
-        database: process.env.STORAGE_MODE === 'file' ? 'file' : 'postgres'
-    });
+        database: process.env.STORAGE_MODE === 'file' ? 'file' : 'postgres',
+        frontend: hasDist ? 'served' : 'missing'
+    };
+    // Report DB reachability so a broken database surfaces as an unhealthy
+    // deploy instead of a service that accepts traffic and then 500s.
+    if (payload.database === 'postgres') {
+        try {
+            await pool.query('SELECT 1');
+            payload.database_status = 'connected';
+        } catch (error) {
+            payload.status = 'degraded';
+            payload.database_status = 'unreachable';
+            return res.status(503).json(payload);
+        }
+    } else {
+        payload.database_status = 'n/a';
+    }
+    res.json(payload);
 });
 
 // Serve the built frontend (from <projectRoot>/dist) when present, so the same
 // server can be used for hosted/online access. API routes above take priority.
-const distDir = path.resolve(__dirname, '..', 'dist');
-const hasDist = fs.existsSync(distDir);
-
 if (hasDist) {
-    app.use(express.static(distDir));
+    // Fingerprinted assets in /assets are safe to cache aggressively; the HTML
+    // entry point must not be cached or users get stuck on a stale bundle.
+    app.use(express.static(distDir, {
+        index: false,
+        setHeaders: (res, filePath) => {
+            if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+                res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            } else {
+                res.setHeader('Cache-Control', 'no-cache');
+            }
+        }
+    }));
     // SPA fallback for the built app
     app.get(/^\/(?!api\/).*/, (req, res) => {
         res.sendFile(path.join(distDir, 'index.html'));
     });
+} else {
+    // No build present (e.g. API-only run): make it obvious rather than 404ing
+    // at "/" with a confusing Express default page.
+    app.get('/', (req, res) => {
+        res.send('SaveCircle API is running... (no frontend build found in dist/)');
+    });
 }
 
-// Root health/API info message (only when the built frontend is absent)
-app.get('/', (req, res) => {
-    res.send('SaveCircle API is running...');
+// Unknown API route → JSON 404 instead of the HTML SPA fallback, so API clients
+// always get a parseable response.
+app.use('/api', (req, res) => {
+    res.status(404).json({ message: `API route not found: ${req.method} ${req.originalUrl}` });
+});
+
+// Central error handler: keeps the process alive and returns JSON instead of a
+// stack trace when something throws inside a route.
+app.use((err, req, res, next) => {
+    console.error('Unhandled request error:', err);
+    if (res.headersSent) return next(err);
+    const status = err.status || err.statusCode || 500;
+    res.status(status).json({
+        message: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+    });
 });
 
 // Seed default users: superadmin, group admins, and member accounts.

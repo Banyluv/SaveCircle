@@ -61,7 +61,7 @@ This application comes pre-configured with authentic Nigerian commerce hubs and 
 
 - **Framework**: React 18 (ESM Component Architecture)
 - **Bundler / Dev Server**: Vite 6
-- **Styling**: Vanilla CSS Design System with Glassmorphism (`#0b1320` dark slate, `#008751` Nigerian Emerald, `#f59e0b` Warm Gold accents)
+- **Styling**: Vanilla CSS Design System with Glassmorphism (green & white palette — `#008751` Nigerian Emerald on white, green-tinted dark mode)
 - **Typography**: Google Fonts (*Plus Jakarta Sans* & *Inter*)
 - **Icons**: `lucide-react`
 - **Effects**: `canvas-confetti`
@@ -109,12 +109,19 @@ Push this repo to GitHub, then in the Render dashboard choose **New → Web Serv
 | Setting | Value |
 |---|---|
 | Runtime | Node |
-| Build Command | `npm ci --include=dev && npm run build` |
+| Build Command | `ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci --include=dev && npm run build` |
 | Start Command | `npm start` |
-| Health Check Path | `/` |
+| Health Check Path | `/api/health` |
 | Instance Type | Free (or Starter) |
 
 `--include=dev` is required: Vite and the React plugin are dev dependencies, and the frontend cannot be built without them.
+
+`ELECTRON_SKIP_BINARY_DOWNLOAD=1` stops npm from downloading Electron's ~358 MB desktop
+binary on every deploy. Electron is only the optional desktop shell, so that download
+wastes time and is the most likely cause of a build timeout.
+
+Pointing the health check at `/api/health` (not `/`) also means Render verifies the API
+and database, rather than just checking that an HTML file exists.
 
 A `render.yaml` blueprint is included, so **New → Blueprint** works too — it declares the same settings plus the environment variables below.
 
@@ -126,8 +133,13 @@ A `render.yaml` blueprint is included, so **New → Blueprint** works too — it
 | `JWT_SECRET` | A long random string — **do not reuse the dev default** |
 | `NODE_ENV` | `production` |
 | `HOST` | `0.0.0.0` |
+| `CORS_ORIGIN` | *(optional)* comma-separated origin allowlist, only if you call the API from another domain |
 
 `HOST` matters: Render routes traffic to the container from outside, so the server must bind all interfaces rather than `127.0.0.1`. `server.js` detects this automatically via `NODE_ENV`, `HOST`, or Render's own `RENDER` variable, but setting it explicitly is safest.
+
+`JWT_SECRET` is required in practice. Without it the server generates a random secret
+per process, which invalidates every session on each restart/deploy — and the old
+hardcoded fallback was a public string that would let anyone forge an admin token.
 
 `PORT` is provided by Render — do not set it.
 

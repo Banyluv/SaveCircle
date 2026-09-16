@@ -11,12 +11,12 @@ const NAV_SEGMENTS = new Set([
 // Map notification type → icon + color for the dropdown list.
 const typeMeta = (type) => {
   switch (type) {
-    case 'loan_approved': return { icon: CheckCircle2, color: '#10b981' };
-    case 'loan_rejected': return { icon: XCircle, color: '#ef4444' };
+    case 'loan_approved': return { icon: CheckCircle2, color: 'var(--success)' };
+    case 'loan_rejected': return { icon: XCircle, color: 'var(--danger)' };
     case 'loan_applied': return { icon: FileText, color: 'var(--accent-gold)' };
     case 'repayment_submitted': return { icon: HandCoins, color: 'var(--accent-gold)' };
-    case 'repayment_verified': return { icon: CheckCircle2, color: '#10b981' };
-    default: return { icon: Bell, color: '#60a5fa' };
+    case 'repayment_verified': return { icon: CheckCircle2, color: 'var(--success)' };
+    default: return { icon: Bell, color: 'var(--primary)' };
   }
 };
 
@@ -163,7 +163,7 @@ export default function NotificationBell({ onNavigate }) {
             height: '17px',
             padding: '0 4px',
             borderRadius: '9999px',
-            background: '#ef4444',
+            background: 'var(--danger)',
             color: '#fff',
             fontSize: '0.62rem',
             fontWeight: 700,
@@ -235,7 +235,7 @@ export default function NotificationBell({ onNavigate }) {
                     gap: '0.7rem',
                     padding: '0.75rem 1rem',
                     textAlign: 'left',
-                    background: n.is_read ? 'transparent' : 'rgba(0,135,81,0.06)',
+                    background: n.is_read ? 'transparent' : 'var(--success-bg)',
                     border: 'none',
                     borderBottom: '1px solid var(--border-card)',
                     cursor: 'pointer',
@@ -243,7 +243,7 @@ export default function NotificationBell({ onNavigate }) {
                     transition: 'background 0.15s'
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-surface-hover)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = n.is_read ? 'transparent' : 'rgba(0,135,81,0.06)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = n.is_read ? 'transparent' : 'var(--success-bg)'; }}
                 >
                   <span style={{
                     width: '32px', height: '32px', minWidth: '32px', borderRadius: 'var(--radius-sm)',

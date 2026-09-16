@@ -54,7 +54,7 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
             {group.frequency} &bull; {group.members.length} Members
           </span>
           <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-            Keeping fee: <strong style={{ color: '#f59e0b' }}>1 contribution per member</strong> ({formatNaira(group.contributionAmount)}) collected at the end of the circle
+            Keeping fee: <strong style={{ color: 'var(--accent-gold)' }}>1 contribution per member</strong> ({formatNaira(group.contributionAmount)}) collected at the end of the circle
           </div>
         </div>
       </div>
@@ -169,7 +169,7 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
                     </div>
                   </div>
 
-                  <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: '0.8rem' }}>
+                  <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-card)', fontSize: '0.8rem' }}>
                     <div>Phone: <span style={{ color: 'var(--text-main)' }}>{m.phone}</span></div>
                     <div>Bank: <span style={{ color: 'var(--accent-gold)' }}>{m.bank}</span> ({m.accountNumber})</div>
                   </div>
@@ -190,7 +190,7 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
                 <li>Contribution: <strong style={{ color: 'var(--primary-light)' }}>{formatNaira(group.contributionAmount)}</strong></li>
                 <li>Frequency: <strong style={{ color: 'var(--text-main)' }}>{group.frequency}</strong></li>
                 <li>Late Penalty Fee: <strong style={{ color: 'var(--danger)' }}>{formatNaira(group.penaltyFee)}</strong></li>
-                <li>Keeping Fee: <strong style={{ color: '#f59e0b' }}>1 contribution per member ({formatNaira(group.contributionAmount)})</strong></li>
+                <li>Keeping Fee: <strong style={{ color: 'var(--accent-gold)' }}>1 contribution per member ({formatNaira(group.contributionAmount)})</strong></li>
                 <li>Total Pool Pot per Cycle: <strong style={{ color: 'var(--accent-gold)' }}>{formatNaira(group.contributionAmount * group.members.length)}</strong></li>
               </ul>
 

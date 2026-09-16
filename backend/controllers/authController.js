@@ -1,12 +1,13 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import pool from '../config/db.js';
+import { JWT_SECRET } from '../config/jwt.js';
 import { fileStore } from '../config/fileStore.js';
 
 const useFileStore = () => process.env.STORAGE_MODE === 'file';
 
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET || 'secret_key_savecircle', { expiresIn: '30d' });
+    return jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' });
 };
 
 const publicUser = (user) => ({

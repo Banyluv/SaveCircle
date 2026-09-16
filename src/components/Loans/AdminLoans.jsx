@@ -79,7 +79,7 @@ export default function AdminLoans() {
       </div>
 
       {error && (
-        <div style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem' }}>{error}</div>
+        <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-text)', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem' }}>{error}</div>
       )}
 
       {/* Sub-tabs */}
@@ -99,10 +99,10 @@ export default function AdminLoans() {
           {statsCards && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           {[
-            { label: 'Active Loans', value: statsCards.active_loans, icon: <Wallet className="w-5 h-5" />, color: '#10b981', bg: 'rgba(16,185,129,0.15)' },
-            { label: 'Pending Applications', value: statsCards.pending_applications, icon: <ListChecks className="w-5 h-5" />, color: 'var(--accent-gold)', bg: 'rgba(245,158,11,0.15)' },
-            { label: 'Total Outstanding', value: formatNaira(statsCards.total_outstanding), icon: <Landmark className="w-5 h-5" />, color: 'var(--text-main)', bg: 'rgba(59,130,246,0.15)' },
-            { label: 'Total Collected', value: formatNaira(statsCards.total_collected), icon: <Wallet className="w-5 h-5" />, color: 'var(--primary-light)', bg: 'rgba(0,135,81,0.15)' }
+            { label: 'Active Loans', value: statsCards.active_loans, icon: <Wallet className="w-5 h-5" />, color: 'var(--success)', bg: 'var(--success-bg)' },
+            { label: 'Pending Applications', value: statsCards.pending_applications, icon: <ListChecks className="w-5 h-5" />, color: 'var(--accent-gold)', bg: 'var(--warning-bg)' },
+            { label: 'Total Outstanding', value: formatNaira(statsCards.total_outstanding), icon: <Landmark className="w-5 h-5" />, color: 'var(--text-main)', bg: 'var(--neutral-bg)' },
+            { label: 'Total Collected', value: formatNaira(statsCards.total_collected), icon: <Wallet className="w-5 h-5" />, color: 'var(--primary-light)', bg: 'var(--success-bg)' }
           ].map((c, i) => (
             <div key={i} className="glass-card" style={{ padding: '1.1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>

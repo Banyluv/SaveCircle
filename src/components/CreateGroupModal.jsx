@@ -169,7 +169,7 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
             />
           </div>
 
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem', marginBottom: '1rem' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'var(--success-bg)', border: '1px solid var(--border-card)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem', marginBottom: '1rem' }}>
             💡 The admin's keeping fee is <strong style={{ color: 'var(--accent-gold)' }}>one contribution amount per member</strong> (e.g. a member contributing ₦500 daily/weekly/monthly pays a ₦500 keeping fee at the end of the circle). It's collected automatically at withdrawal.
           </div>
 
@@ -218,7 +218,7 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
             borderRadius: 'var(--radius-md)',
             padding: '1rem',
             marginTop: '1rem',
-            background: 'rgba(0, 135, 81, 0.05)'
+            background: 'var(--success-bg)'
           }}>
             <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Wallet className="w-4 h-4" /> Group Bank Account <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(members pay into & withdraw from this)</span>

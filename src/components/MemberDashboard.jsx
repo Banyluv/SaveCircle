@@ -193,14 +193,14 @@ export default function MemberDashboard({ groups }) {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
-          <div style={{ background: 'rgba(0, 135, 81, 0.08)', border: '1px solid var(--border-card-accent)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem' }}>
+          <div style={{ background: 'var(--success-bg)', border: '1px solid var(--border-card-accent)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem' }}>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>My Plan</div>
             <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)' }}>
               {formatNaira(perUnitAmount)} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>per {perUnitLabel.toLowerCase()}</span>
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{frequency} frequency</div>
           </div>
-          <div style={{ background: 'rgba(0, 135, 81, 0.08)', border: '1px solid var(--border-card-accent)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem' }}>
+          <div style={{ background: 'var(--success-bg)', border: '1px solid var(--border-card-accent)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem' }}>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Total Verified</div>
             <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--primary-light)' }}>{formatNaira(totalVerifiedAmount)}</div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -302,7 +302,7 @@ export default function MemberDashboard({ groups }) {
               {/* Withdrawal breakdown: gross − keeping fee = net */}
               <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '0.2rem', marginBottom: '0.6rem' }}>
                 <span>Your contributions: <strong style={{ color: 'var(--text-main)' }}>{formatNaira(grossWithdrawal)}</strong></span>
-                <span>Keeping fee (1 cycle of your {myProfile?.contributionAmount ? `${formatNaira(myProfile.contributionAmount)}` : ''} contribution): <strong style={{ color: '#f87171' }}>− {formatNaira(keepingFee)}</strong></span>
+                <span>Keeping fee (1 cycle of your {myProfile?.contributionAmount ? `${formatNaira(myProfile.contributionAmount)}` : ''} contribution): <strong style={{ color: 'var(--danger-text)' }}>− {formatNaira(keepingFee)}</strong></span>
                 <span style={{ borderTop: '1px solid var(--border-card)', paddingTop: '0.3rem' }}>
                   You'll receive: <strong style={{ color: 'var(--primary-light)', fontSize: '1rem' }}>{formatNaira(netWithdrawal)}</strong>
                 </span>
@@ -317,7 +317,7 @@ export default function MemberDashboard({ groups }) {
             </div>
           )}
           {withdrawMsg && <p style={{ fontSize: '0.8rem', color: 'var(--primary-light)', marginTop: '0.5rem' }}>{withdrawMsg}</p>}
-          {withdrawErr && <p style={{ fontSize: '0.8rem', color: '#f87171', marginTop: '0.5rem' }}>{withdrawErr}</p>}
+          {withdrawErr && <p style={{ fontSize: '0.8rem', color: 'var(--danger-text)', marginTop: '0.5rem' }}>{withdrawErr}</p>}
         </div>
       </div>
 

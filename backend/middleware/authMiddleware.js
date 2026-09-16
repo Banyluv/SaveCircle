@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { JWT_SECRET } from '../config/jwt.js';
 
 // Normalize a user row into the camelCase shape the rest of the app expects.
 // PostgreSQL rows come back with snake_case columns (group_id, member_id,
@@ -30,7 +31,7 @@ export const protect = async (req, res, next) => {
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key_savecircle');
+            const decoded = jwt.verify(token, JWT_SECRET);
             const user = await User.findById(decoded.id);
             if (!user) {
                 return res.status(401).json({ message: 'Not authorized, token failed' });

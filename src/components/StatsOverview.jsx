@@ -37,7 +37,7 @@ export default function StatsOverview({ groups }) {
       <div className="glass-card" style={{ padding: '1.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Thrift Collected</span>
-          <div style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(0, 135, 81, 0.15)', color: 'var(--primary-light)' }}>
+          <div style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)', background: 'var(--success-bg)', color: 'var(--primary-light)' }}>
             <Wallet className="w-5 h-5" />
           </div>
         </div>
@@ -53,7 +53,7 @@ export default function StatsOverview({ groups }) {
       <div className="glass-card" style={{ padding: '1.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Active Groups & Members</span>
-          <div style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa' }}>
+          <div style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)', background: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
             <Users className="w-5 h-5" />
           </div>
         </div>
@@ -69,7 +69,7 @@ export default function StatsOverview({ groups }) {
       <div className="glass-card" style={{ padding: '1.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Pending Verification</span>
-          <div style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--accent-gold)' }}>
+          <div style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)', background: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
             <Calendar className="w-5 h-5" />
           </div>
         </div>
@@ -85,14 +85,14 @@ export default function StatsOverview({ groups }) {
       <div className="glass-card" style={{ padding: '1.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Overdue Payments</span>
-          <div style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)', background: 'rgba(239, 68, 68, 0.15)', color: '#fca5a5' }}>
+          <div style={{ padding: '0.4rem', borderRadius: 'var(--radius-sm)', background: 'var(--danger-bg)', color: 'var(--danger-text)' }}>
             <AlertTriangle className="w-5 h-5" />
           </div>
         </div>
-        <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: overdueCount > 0 ? '#ef4444' : 'var(--text-main)' }}>
+        <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: overdueCount > 0 ? 'var(--danger)' : 'var(--text-main)' }}>
           {overdueCount} <span style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-muted)' }}>members</span>
         </h3>
-        <p style={{ fontSize: '0.78rem', color: '#fca5a5', marginTop: '0.4rem' }}>
+        <p style={{ fontSize: '0.78rem', color: 'var(--danger-text)', marginTop: '0.4rem' }}>
           {overdueCount > 0 ? 'Reminders queued' : 'All accounts up to date'}
         </p>
       </div>

@@ -38,10 +38,10 @@ export default function MyLoans({ isAdmin }) {
 
   const s = stats?.stats;
   const statsCards = s ? [
-    { label: 'Active Loans', value: s.active_loans, icon: <Wallet className="w-5 h-5" />, color: '#10b981', bg: 'rgba(16,185,129,0.15)' },
-    { label: 'Pending Applications', value: s.pending_loans, icon: <Clock className="w-5 h-5" />, color: 'var(--accent-gold)', bg: 'rgba(245,158,11,0.15)' },
-    { label: 'Total Outstanding', value: formatNaira(s.total_outstanding), icon: <TrendingUp className="w-5 h-5" />, color: 'var(--text-main)', bg: 'rgba(59,130,246,0.15)' },
-    { label: 'Total Repaid', value: formatNaira(s.total_paid), icon: <HandCoins className="w-5 h-5" />, color: 'var(--primary-light)', bg: 'rgba(0,135,81,0.15)' }
+    { label: 'Active Loans', value: s.active_loans, icon: <Wallet className="w-5 h-5" />, color: 'var(--success)', bg: 'var(--success-bg)' },
+    { label: 'Pending Applications', value: s.pending_loans, icon: <Clock className="w-5 h-5" />, color: 'var(--accent-gold)', bg: 'var(--warning-bg)' },
+    { label: 'Total Outstanding', value: formatNaira(s.total_outstanding), icon: <TrendingUp className="w-5 h-5" />, color: 'var(--text-main)', bg: 'var(--neutral-bg)' },
+    { label: 'Total Repaid', value: formatNaira(s.total_paid), icon: <HandCoins className="w-5 h-5" />, color: 'var(--primary-light)', bg: 'var(--success-bg)' }
   ] : [];
 
   return (
@@ -60,7 +60,7 @@ export default function MyLoans({ isAdmin }) {
       </div>
 
       {error && (
-        <div style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem' }}>{error}</div>
+        <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-text)', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem' }}>{error}</div>
       )}
 
       {statsCards.length > 0 && (

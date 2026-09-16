@@ -122,10 +122,10 @@ export default function ApplyLoanModal({ onClose, onApplied }) {
         </div>
 
         {error && (
-          <div style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>
+          <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-text)', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>
         )}
         {success && (
-          <div style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem', fontSize: '0.9rem' }}>{success}</div>
+          <div style={{ background: 'var(--success-bg)', color: 'var(--success-text)', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem', fontSize: '0.9rem' }}>{success}</div>
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -190,7 +190,7 @@ export default function ApplyLoanModal({ onClose, onApplied }) {
 
           {loading && <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Calculating…</p>}
           {quote && !loading && (
-            <div className="glass-card" style={{ padding: '1rem', marginBottom: '1rem', background: 'rgba(0,135,81,0.06)', borderColor: 'var(--border-card-accent)' }}>
+            <div className="glass-card" style={{ padding: '1rem', marginBottom: '1rem', background: 'var(--success-bg)', borderColor: 'var(--border-card-accent)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem', color: 'var(--primary-light)', fontWeight: 700 }}>
                 <Calculator className="w-4 h-4" /> Repayment Quote
               </div>

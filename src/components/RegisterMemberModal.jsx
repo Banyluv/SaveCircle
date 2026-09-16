@@ -85,13 +85,13 @@ export default function RegisterMemberModal({ onClose, groups }) {
         </div>
 
         {error && (
-          <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>
+          <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-text)', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>
             {error}
           </div>
         )}
 
         {success && (
-          <div style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>
+          <div style={{ background: 'var(--success-bg)', color: 'var(--success-text)', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>
             {success}
           </div>
         )}
@@ -148,7 +148,7 @@ export default function RegisterMemberModal({ onClose, groups }) {
                 border: '1px solid var(--border-card-accent)',
                 borderRadius: 'var(--radius-md)',
                 padding: '1rem',
-                background: 'rgba(0, 135, 81, 0.05)'
+                background: 'var(--success-bg)'
               }}>
                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <Wallet className="w-4 h-4" /> Bank Details <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(for receiving your payouts)</span>

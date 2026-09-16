@@ -1,83 +1,139 @@
-/* Offline-safe font stack: uses system fonts, no external network requests. */
+/* SaveCircle palette: GREEN & WHITE.
+   - `:root` is the DEFAULT theme = white surfaces + green accents.
+   - `[data-theme="dark"]` is an optional green-tinted dark theme.
+   Only red is retained (destructive actions / errors). No amber or gold. */
 :root,
-[data-theme="dark"] {
-  --bg-main: #0b1320;
-  --bg-surface: #111c2e;
-  --bg-surface-hover: #19273f;
-  --bg-card: rgba(17, 28, 46, 0.75);
-  --border-card: rgba(255, 255, 255, 0.08);
-  --border-card-accent: rgba(0, 135, 81, 0.3);
+[data-theme="light"] {
+  --bg-main: #f7fbf8; /* near-white, faintly green */
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #eaf6ef;
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --border-card: rgba(6, 78, 48, 0.12);
+  --border-card-accent: rgba(0, 135, 81, 0.32);
 
   --primary: #008751; /* Nigerian Emerald Green */
-  --primary-light: #10b981;
-  --primary-dark: #00663c;
-  --primary-glow: rgba(0, 135, 81, 0.35);
+  --primary-light: #04724a; /* readable green for text/icons on white */
+  --primary-dark: #005c37;
+  --primary-glow: rgba(0, 135, 81, 0.22);
 
-  --accent-gold: #f59e0b;
-  --accent-gold-light: #fbbf24;
-  --accent-gold-glow: rgba(245, 158, 11, 0.25);
+  /* Kept the legacy token name so existing components inherit the new
+     green accent without touching every file. Value is now green. */
+  --accent-gold: #046c46;
+  --accent-gold-light: #0b8f5c;
+  --accent-gold-glow: rgba(0, 135, 81, 0.18);
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --text-main: #0b1f16;
+  --text-muted: #4b5f55;
+  --text-dim: #8aa196;
 
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #3b82f6;
+  --success: #04724a;
+  --warning: #0f766e; /* teal-green: on-palette "attention" colour */
+  --danger: #b91c1c;
+  --info: #0e7490;
+
+  --success-bg: rgba(0, 135, 81, 0.1);
+  --success-text: #04603d;
+  --success-border: rgba(0, 135, 81, 0.26);
+  --warning-bg: rgba(15, 118, 110, 0.1);
+  --warning-text: #0f5f59;
+  --warning-border: rgba(15, 118, 110, 0.26);
+  --danger-bg: rgba(185, 28, 28, 0.09);
+  --danger-text: #a51b1b;
+  --danger-border: rgba(185, 28, 28, 0.26);
+  --neutral-bg: rgba(75, 95, 85, 0.09);
+  --neutral-text: #4b5f55;
+  --neutral-border: rgba(75, 95, 85, 0.2);
+
+  --brand-gradient: linear-gradient(135deg, #008751 0%, #12a35f 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #00995c 0%, #17c072 100%);
+  --accent-gradient: linear-gradient(135deg, #065f46 0%, #0d8a5a 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #0b6b42 0%, #12a35f 100%);
+  --accent-btn-text: #ffffff;
+  --on-brand: #ffffff;
+
+  --body-glow-1: rgba(0, 135, 81, 0.07);
+  --body-glow-2: rgba(0, 135, 81, 0.05);
 
   --radius-sm: 8px;
   --radius-md: 14px;
   --radius-lg: 20px;
   --radius-full: 9999px;
 
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.45);
-  --shadow-glow: 0 0 25px rgba(0, 135, 81, 0.25);
-
-  --input-bg: #0b1320;
-  --input-border: #1e293b;
-  --overlay-bg: rgba(11, 19, 32, 0.85);
-  --soft-bg: #1e293b;
-  --banner-bg: linear-gradient(135deg, rgba(0, 135, 81, 0.25) 0%, rgba(245, 158, 11, 0.15) 100%);
-}
-
-/* Light theme */
-[data-theme="light"] {
-  --bg-main: #f1f5f9;
-  --bg-surface: #ffffff;
-  --bg-surface-hover: #e2e8f0;
-  --bg-card: rgba(255, 255, 255, 0.82);
-  --border-card: rgba(15, 23, 42, 0.1);
-  --border-card-accent: rgba(0, 135, 81, 0.35);
-
-  --primary: #008751;
-  --primary-light: #059669;
-  --primary-dark: #00663c;
-  --primary-glow: rgba(0, 135, 81, 0.25);
-
-  --accent-gold: #d97706;
-  --accent-gold-light: #f59e0b;
-  --accent-gold-glow: rgba(245, 158, 11, 0.2);
-
-  --text-main: #0f172a;
-  --text-muted: #475569;
-  --text-dim: #94a3b8;
-
-  --success: #059669;
-  --warning: #d97706;
-  --danger: #dc2626;
-  --info: #2563eb;
-
-  --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.08);
-  --shadow-lg: 0 12px 36px rgba(15, 23, 42, 0.15);
+  --shadow-sm: 0 4px 12px rgba(6, 78, 48, 0.08);
+  --shadow-lg: 0 12px 36px rgba(6, 78, 48, 0.16);
   --shadow-glow: 0 0 25px rgba(0, 135, 81, 0.18);
 
   --input-bg: #ffffff;
-  --input-border: #cbd5e1;
-  --overlay-bg: rgba(241, 245, 249, 0.85);
-  --soft-bg: #e2e8f0;
-  --banner-bg: linear-gradient(135deg, rgba(0, 135, 81, 0.15) 0%, rgba(245, 158, 11, 0.12) 100%);
+  --input-border: #c3d9cc;
+  --overlay-bg: rgba(247, 251, 248, 0.88);
+  --soft-bg: #e6f2ea;
+  --banner-bg: linear-gradient(135deg, rgba(0, 135, 81, 0.12) 0%, rgba(0, 135, 81, 0.04) 100%);
+}
+
+/* Optional dark theme, tinted green instead of navy */
+[data-theme="dark"] {
+  --bg-main: #04231a;
+  --bg-surface: #073328;
+  --bg-surface-hover: #0b4534;
+  --bg-card: rgba(7, 51, 40, 0.78);
+  --border-card: rgba(255, 255, 255, 0.1);
+  --border-card-accent: rgba(16, 185, 129, 0.34);
+
+  --primary: #0a9d5e;
+  --primary-light: #34d399;
+  --primary-dark: #067544;
+  --primary-glow: rgba(16, 185, 129, 0.3);
+
+  --accent-gold: #34d399;
+  --accent-gold-light: #6ee7b7;
+  --accent-gold-glow: rgba(16, 185, 129, 0.24);
+
+  --text-main: #f2fbf6;
+  --text-muted: #a7c6b7;
+  --text-dim: #6f8f80;
+
+  --success: #10b981;
+  --warning: #2dd4bf;
+  --danger: #ef4444;
+  --info: #22d3ee;
+
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --success-text: #6ee7b7;
+  --success-border: rgba(16, 185, 129, 0.3);
+  --warning-bg: rgba(45, 212, 191, 0.15);
+  --warning-text: #5eead4;
+  --warning-border: rgba(45, 212, 191, 0.3);
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  --danger-text: #fca5a5;
+  --danger-border: rgba(239, 68, 68, 0.3);
+  --neutral-bg: rgba(167, 198, 183, 0.12);
+  --neutral-text: #a7c6b7;
+  --neutral-border: rgba(167, 198, 183, 0.2);
+
+  --brand-gradient: linear-gradient(135deg, #0a8f58 0%, #14b56f 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #0fa564 0%, #1ecb80 100%);
+  --accent-gradient: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%);
+  --accent-btn-text: #04231a;
+  --on-brand: #ffffff;
+
+  --body-glow-1: rgba(16, 185, 129, 0.1);
+  --body-glow-2: rgba(16, 185, 129, 0.07);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 25px rgba(16, 185, 129, 0.22);
+
+  --input-bg: #052b20;
+  --input-border: #10493a;
+  --overlay-bg: rgba(4, 35, 26, 0.88);
+  --soft-bg: #0b4534;
+  --banner-bg: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0.08) 100%);
 }
 
 * {
@@ -93,8 +149,8 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(0, 135, 81, 0.12) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.08) 0%, transparent 40%);
+    radial-gradient(circle at 10% 20%, var(--body-glow-1) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, var(--body-glow-2) 0%, transparent 40%);
   background-attachment: fixed;
   overflow-x: hidden;
 }
@@ -127,7 +183,7 @@ body {
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: var(--border-card-accent);
 }
 
 .glass-card-interactive {
@@ -157,24 +213,26 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, #00a865 100%);
-  color: #ffffff;
+  background: var(--brand-gradient);
+  color: var(--on-brand);
   box-shadow: 0 4px 14px var(--primary-glow);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #00995c 0%, #00c274 100%);
+  background: var(--brand-gradient-hover);
   box-shadow: 0 6px 20px var(--primary-glow);
   transform: translateY(-1px);
 }
 
+/* Formerly the gold CTA. Now the deeper green "accent" button so the UI
+   stays green & white; class name kept for existing markup. */
 .btn-gold {
-  background: linear-gradient(135deg, #d97706 0%, var(--accent-gold) 100%);
-  color: #0b1320;
+  background: var(--accent-gradient);
+  color: var(--accent-btn-text);
   font-weight: 700;
   box-shadow: 0 4px 14px var(--accent-gold-glow);
 }
 .btn-gold:hover {
-  background: linear-gradient(135deg, var(--accent-gold) 0%, #fcd34d 100%);
+  background: var(--accent-gradient-hover);
   transform: translateY(-1px);
 }
 
@@ -197,12 +255,12 @@ body {
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-border);
 }
 .btn-danger:hover {
-  background: rgba(239, 68, 68, 0.3);
+  background: rgba(185, 28, 28, 0.22);
 }
 
 .btn-sm {
@@ -225,27 +283,27 @@ body {
 }
 
 .badge-success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #6ee7b7;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
 }
 
 .badge-warning {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fde047;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
 }
 
 .badge-danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-border);
 }
 
 .badge-neutral {
-  background: rgba(148, 163, 184, 0.12);
-  color: var(--text-muted);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: var(--neutral-bg);
+  color: var(--neutral-text);
+  border: 1px solid var(--neutral-border);
 }
 
 /* Layout Utilities */
@@ -450,8 +508,8 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  color: #fff;
-  background: linear-gradient(135deg, var(--primary) 0%, #00a865 100%);
+  color: var(--on-brand);
+  background: var(--brand-gradient);
   box-shadow: var(--shadow-glow);
 }
 
@@ -486,3 +544,22 @@ body {
   border-radius: 50%;
   background: var(--accent-gold);
 }
+
+/* ------------------------------------------------------------------
+   Icon colour utilities.
+
+   Components were written with Tailwind-style class names (text-emerald-400,
+   w-5, h-5, ...) but this project does not use Tailwind, so those classes had
+   no CSS behind them and every icon silently rendered at its inherited colour.
+   The rules below implement the colour ones on-palette (green & white) so the
+   markup finally looks the way it was written. Sizes are intentionally left
+   alone because every icon already sets an explicit width/height attribute.
+   ------------------------------------------------------------------ */
+.text-emerald-400 { color: var(--success); }
+.text-amber-400 { color: var(--warning); }
+.text-gold { color: var(--accent-gold); }
+.text-muted { color: var(--text-muted); }
+/* Destructive / error feedback keeps a red hue by design. */
+.text-rose-400 { color: var(--danger); }
+.text-blue-400 { color: var(--info); }
+.text-emerald-500 { color: var(--success); }

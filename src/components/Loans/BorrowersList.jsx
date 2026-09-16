@@ -41,7 +41,7 @@ export default function BorrowersList() {
       </div>
 
       {error && (
-        <div style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem' }}>{error}</div>
+        <div style={{ background: 'var(--danger-bg)', color: 'var(--danger-text)', padding: '0.75rem', borderRadius: 8, marginBottom: '1rem' }}>{error}</div>
       )}
 
       {loading ? (

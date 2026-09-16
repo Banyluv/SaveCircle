@@ -77,7 +77,7 @@ export default function SwapPositionModal({ group, onClose, onSwapSubmit }) {
               width: '36px',
               height: '36px',
               borderRadius: '50%',
-              background: 'rgba(245, 158, 11, 0.2)',
+              background: 'var(--warning-bg)',
               color: 'var(--accent-gold)',
               display: 'flex',
               alignItems: 'center',
@@ -106,7 +106,7 @@ export default function SwapPositionModal({ group, onClose, onSwapSubmit }) {
           </div>
 
           {m1 && m2 && member1Id === member2Id && (
-            <p style={{ color: '#fca5a5', fontSize: '0.8rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <p style={{ color: 'var(--danger-text)', fontSize: '0.8rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
               <AlertCircle className="w-4 h-4" /> Please select two different members to swap turns.
             </p>
           )}

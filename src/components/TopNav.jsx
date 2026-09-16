@@ -103,7 +103,7 @@ export default function TopNav({ onOpenCreateModal, onResetDemoData, onNavigate 
         <button
           onClick={logout}
           title="Log out"
-          style={{ ...iconBtn, background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.25)', color: '#f87171' }}
+          style={{ ...iconBtn, background: 'var(--danger-bg)', border: '1px solid var(--danger-border)', color: 'var(--danger-text)' }}
         >
           <LogOut className="w-4 h-4" />
         </button>

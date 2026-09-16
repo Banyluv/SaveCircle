@@ -153,8 +153,8 @@ export default function AiChat({ groups = [] }) {
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.6rem',
             padding: '0.9rem 1rem',
-            background: 'linear-gradient(135deg, var(--primary) 0%, #00a865 100%)',
-            color: '#fff'
+            background: 'var(--brand-gradient)',
+            color: 'var(--on-brand)'
           }}>
             <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Bot className="w-5 h-5" />
@@ -163,7 +163,7 @@ export default function AiChat({ groups = [] }) {
               <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>SaveCircle Assistant</div>
               <div style={{ fontSize: '0.72rem', opacity: 0.9 }}>Online • works offline</div>
             </div>
-            <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+            <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--on-brand)', cursor: 'pointer' }}>
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -177,7 +177,7 @@ export default function AiChat({ groups = [] }) {
                 padding: '0.6rem 0.85rem',
                 borderRadius: 'var(--radius-md)',
                 background: m.from === 'user' ? 'var(--primary)' : 'var(--bg-card)',
-                color: m.from === 'user' ? '#fff' : 'var(--text-main)',
+                color: m.from === 'user' ? 'var(--on-brand)' : 'var(--text-main)',
                 border: m.from === 'user' ? 'none' : '1px solid var(--border-card)',
                 fontSize: '0.85rem',
                 lineHeight: 1.45,
@@ -215,8 +215,8 @@ export default function AiChat({ groups = [] }) {
           width: '56px',
           height: '56px',
           borderRadius: '50%',
-          background: 'linear-gradient(135deg, var(--primary) 0%, #00a865 100%)',
-          color: '#fff',
+          background: 'var(--brand-gradient)',
+          color: 'var(--on-brand)',
           border: 'none',
           boxShadow: 'var(--shadow-glow)',
           cursor: 'pointer',
