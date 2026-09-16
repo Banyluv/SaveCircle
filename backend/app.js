@@ -73,21 +73,31 @@ app.get('/api/health', async (req, res) => {
         database: process.env.STORAGE_MODE === 'file' ? 'file' : 'postgres',
         frontend: hasDist ? 'served' : 'missing'
     };
-    // Report DB reachability so a broken database surfaces as an unhealthy
-    // deploy instead of a service that accepts traffic and then 500s.
-    if (payload.database === 'postgres') {
+
+    if (payload.database === 'file') {
+        payload.database_status = 'n/a';
+        return res.json(payload);
+    }
+
+    // Report DB reachability, but retry once first: serverless Postgres (Neon)
+    // suspends when idle and needs a moment to resume. A single failed probe
+    // must not report the service unhealthy, or a deploy could be rolled back
+    // over a routine cold start.
+    for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
             await pool.query('SELECT 1');
             payload.database_status = 'connected';
+            return res.json(payload);
         } catch (error) {
-            payload.status = 'degraded';
-            payload.database_status = 'unreachable';
-            return res.status(503).json(payload);
+            if (attempt === 1) {
+                payload.status = 'degraded';
+                payload.database_status = 'unreachable';
+                payload.database_error = error.message;
+                return res.status(503).json(payload);
+            }
+            await new Promise((r) => setTimeout(r, 750));
         }
-    } else {
-        payload.database_status = 'n/a';
     }
-    res.json(payload);
 });
 
 // Serve the built frontend (from <projectRoot>/dist) when present, so the same
