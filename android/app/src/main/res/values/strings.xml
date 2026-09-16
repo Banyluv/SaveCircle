@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SaveCircle</string>
+    <string name="title_activity_main">SaveCircle</string>
+    <string name="package_name">com.savecircle.app</string>
+    <string name="custom_url_scheme">com.savecircle.app</string>
+</resources>

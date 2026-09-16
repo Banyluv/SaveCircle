@@ -23,7 +23,8 @@ const publicUser = (user) => ({
     orgName: user.orgName || user.org_name || null,
     phone: user.phone || null,
     address: user.address || null,
-    isLoanBorrower: ['individual', 'cooperative'].includes(user.role)
+    isLoanBorrower: ['individual', 'cooperative'].includes(user.role),
+    createdBy: user.createdBy ?? user.created_by ?? null
 });
 
 export const protect = async (req, res, next) => {

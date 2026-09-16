@@ -54,8 +54,9 @@ export const initUsersTable = async () => {
     // Loan-only borrower fields
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS org_name TEXT`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT`);
-    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT`);
-};
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT`);        // Which admin registered this borrower. Lets a group admin see only the
+        // loan borrowers they created, rather than every borrower on the platform.
+        await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_by INTEGER`);};
 
 export const User = {
     async findOne(query) {
@@ -101,7 +102,7 @@ export const User = {
         return result.rows;
     },
 
-    async create({ name, email, password, role = 'member', groupId, memberId, bankName, accountNumber, accountName, contributionAmount, orgName, phone, address }) {
+    async create({ name, email, password, role = 'member', groupId, memberId, bankName, accountNumber, accountName, contributionAmount, orgName, phone, address, createdBy }) {
         const salt = await bcrypt.genSalt(10);
         const hashed = await bcrypt.hash(password, salt);
         if (useFileStore()) {
@@ -128,6 +129,7 @@ export const User = {
                 orgName: orgName || null,
                 phone: phone || null,
                 address: address || null,
+                createdBy: createdBy != null ? Number(createdBy) : null,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             };
@@ -135,10 +137,10 @@ export const User = {
             return user;
         }
         const result = await pool.query(
-            `INSERT INTO users (name, email, password, role, group_id, member_id, bank_name, account_number, account_name, contribution_amount, org_name, phone, address)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            `INSERT INTO users (name, email, password, role, group_id, member_id, bank_name, account_number, account_name, contribution_amount, org_name, phone, address, created_by)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
              RETURNING *`,
-            [name, email, hashed, role, groupId || null, memberId || null, bankName || null, accountNumber || null, accountName || null, contributionAmount != null ? contributionAmount : null, orgName || null, phone || null, address || null]
+            [name, email, hashed, role, groupId || null, memberId || null, bankName || null, accountNumber || null, accountName || null, contributionAmount != null ? contributionAmount : null, orgName || null, phone || null, address || null, createdBy != null ? Number(createdBy) : null]
         );
         return result.rows[0];
     },

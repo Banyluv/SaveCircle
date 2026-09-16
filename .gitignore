@@ -43,3 +43,33 @@ electron/node_modules
 *.njsproj
 *.sln
 *.sw?
+
+# Capacitor / Android build output
+android/app/build/
+android/.gradle/
+android/build/
+android/local.properties
+android/app/release/
+android/.idea/
+*.jks
+*.keystore
+android/app/src/main/assets/public/
+
+# Release signing material: the keystore and its plaintext password. Losing
+# these means no future update can be installed over an existing APK, so back
+# them up somewhere safe — but never commit them.
+android/keystore/
+android/keystore.properties
+
+# Generated APK (published separately; never commit binaries).
+# Kept in apk/ and NOT public/ — Vite copies public/ into dist/, which Capacitor
+# then embeds, so an APK stored there ends up inside the next APK (size doubles
+# every rebuild).
+apk/*
+# ...except the release manifest, which holds no binary but tells the server
+# (and therefore every installed app) which version is current. Without this in
+# the repo a hosted deploy has no idea a newer APK exists, so no phone would
+# ever be offered the update.
+!apk/version.json
+android/build-output.log
+

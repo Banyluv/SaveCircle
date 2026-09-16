@@ -1,5 +1,8 @@
 // Centralised API base URL for the frontend.
 // - Desktop (Electron): uses the embedded API server port exposed via preload.
+// - Mobile (Capacitor APK): there is no bundled server, so the configured
+//   production URL is used. Capacitor serves the app from https://localhost, so
+//   a relative "/api/..." would hit the phone itself and fail.
 // - Online/hosted mode: the backend serves the built frontend, so we use the
 //   SAME origin (relative paths). The Vite dev proxy also forwards /api → 5000.
 // - Otherwise: use VITE_API_URL if set.
@@ -7,9 +10,46 @@ const desktopUrl = window.savecircleDesktop?.isDesktop && window.savecircleDeskt
   ? window.savecircleDesktop.apiBaseUrl
   : null;
 
-// In desktop mode we must call the embedded server explicitly. In the browser
-// (dev or hosted), relative paths work because of the Vite proxy / same-origin backend.
-export const API_BASE_URL = desktopUrl || '';
+// Capacitor injects a global `Capacitor` object; `isNativePlatform()` is true
+// only inside the packaged Android/iOS app (and false in a normal browser).
+const isNativeApp = typeof window !== 'undefined'
+  && (window.Capacitor?.isNativePlatform?.() === true
+      || window.location.protocol === 'capacitor:');
+
+// Injected at build time by Vite (see .env / vite.config.js). Empty in the
+// browser build, where same-origin requests are correct.
+const configuredUrl = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
+
+// A server URL saved on the device overrides the build-time one. This lets a
+// single APK be re-pointed (e.g. from a LAN address during testing to the
+// hosted URL later) without rebuilding and reinstalling it.
+const RUNTIME_URL_KEY = 'savecircle_api_url';
+
+export const getRuntimeApiUrl = () => {
+  try { return (localStorage.getItem(RUNTIME_URL_KEY) || '').replace(/\/+$/, ''); } catch { return ''; }
+};
+
+export const setRuntimeApiUrl = (url) => {
+  try {
+    const clean = String(url || '').trim().replace(/\/+$/, '');
+    if (clean) localStorage.setItem(RUNTIME_URL_KEY, clean);
+    else localStorage.removeItem(RUNTIME_URL_KEY);
+  } catch {
+    // ignore storage failures (private mode, etc.)
+  }
+};
+
+export const API_BASE_URL = desktopUrl
+  || getRuntimeApiUrl()
+  || (isNativeApp ? configuredUrl : '');
+
+// True when this is a native build with no server address available at all:
+// nothing was compiled in and the user has not set one on the device. The UI
+// uses this to explain the problem instead of showing a bare network error.
+export const API_MISCONFIGURED = isNativeApp && !desktopUrl && !API_BASE_URL;
+
+// Native builds can always be re-pointed, so the UI offers a server field.
+export const CAN_SET_SERVER_URL = isNativeApp && !desktopUrl;
 
 export const apiFetch = (path, options = {}) => {
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
@@ -90,4 +130,27 @@ export const notificationAPI = {
   unreadCount: () => loanFetch('/api/notifications/unread-count'),
   markAllRead: () => loanFetch('/api/notifications/read-all', { method: 'PATCH' }),
   markOneRead: (id) => loanFetch(`/api/notifications/${id}/read`, { method: 'PATCH' })
+};
+
+// ─── Platform settings (central account) ─────────────────────────────────────
+// Every signed-in user can read where to pay; only a superadmin can change it.
+export const settingsAPI = {
+  getCentralAccount: () => loanFetch('/api/settings/central-account'),
+  updateCentralAccount: (payload) =>
+    loanFetch('/api/settings/central-account', { method: 'PUT', body: JSON.stringify(payload) })
+};
+
+// ─── App release / over-the-air update ───────────────────────────────────────
+// Uses plain fetch (NOT loanFetch): the caller may not be signed in yet — an
+// out-of-date app must still be able to check for and install an update.
+export const appAPI = {
+  latestVersion: async (currentVersionCode) => {
+    const qs = currentVersionCode === undefined || currentVersionCode === null
+      ? ''
+      : `?currentVersionCode=${encodeURIComponent(currentVersionCode)}`;
+    const res = await apiFetch(`/api/app/version${qs}`);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.message || `Update check failed (${res.status})`);
+    return data;
+  }
 };

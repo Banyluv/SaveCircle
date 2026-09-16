@@ -21,6 +21,21 @@ const requireDb = (req, res) => {
 
 const isAdminRole = (user) => user && ['admin', 'superadmin'].includes(user.role);
 
+// Can this admin act on this borrower's loan?
+// superadmin: yes. Group admin: only if the borrower belongs to their group, or
+// they were the admin who registered the borrower. Without this a group admin
+// could approve/reject/verify loans belonging to a different group.
+const adminCanAccessBorrower = async (query, user, borrowerId) => {
+    if (user.role === 'superadmin') return true;
+    const res = await query(
+        `SELECT 1 FROM users
+         WHERE id = $1 AND (group_id = $2 OR created_by = $3)
+         LIMIT 1`,
+        [borrowerId, user.groupId || null, Number(user.id)]
+    );
+    return res.rows.length > 0;
+};
+
 // Postgres integer columns reject non-numeric strings with a 22P02 error, which
 // would surface as a 500. Validate route params up front and return 400 instead.
 const parseIntParam = (value) => {
@@ -388,10 +403,20 @@ export const getBorrowers = async (req, res) => {
         return res.status(403).json({ success: false, message: 'Admin access required' });
     }
     try {
+        // superadmin sees every borrower. A group admin sees only the borrowers
+        // they registered, so one group admin cannot browse another's book.
+        const isSuper = req.user.role === 'superadmin';
+        const params = [];
+        let ownerFilter = '';
+        if (!isSuper) {
+            params.push(Number(req.user.id));
+            ownerFilter = ` AND u.created_by = $${params.length}`;
+        }
+
         const result = await pool.query(
             `SELECT u.id, u.name, u.email, u.role, u.group_id, u.member_id,
                     u.bank_name, u.account_number, u.account_name,
-                    u.org_name, u.phone, u.address, u.created_at,
+                    u.org_name, u.phone, u.address, u.created_by, u.created_at,
                     (SELECT COUNT(*) FROM loan_applications la
                       WHERE la.borrower_id = u.id AND la.status IN ('active','disbursed')) as active_loans,
                     (SELECT COUNT(*) FROM loan_applications la
@@ -400,8 +425,9 @@ export const getBorrowers = async (req, res) => {
                       JOIN loan_accounts lac ON lac.loan_id = la.id
                       WHERE la.borrower_id = u.id AND la.status IN ('active','disbursed')) as outstanding
              FROM users u
-             WHERE u.role IN ('individual','cooperative')
-             ORDER BY u.created_at DESC`
+             WHERE u.role IN ('individual','cooperative')${ownerFilter}
+             ORDER BY u.created_at DESC`,
+            params
         );
         res.json({ success: true, data: result.rows });
     } catch (error) {
@@ -422,6 +448,14 @@ export const getAllApplications = async (req, res) => {
 
         let where = 'WHERE 1=1';
         const params = [];
+
+        // A group admin only sees applications belonging to their own group's
+        // members, or to borrowers they registered. superadmin sees everything.
+        if (req.user.role !== 'superadmin') {
+            params.push(req.user.groupId || null, Number(req.user.id));
+            where += ` AND (u.group_id = $${params.length - 1} OR u.created_by = $${params.length})`;
+        }
+
         if (status) {
             params.push(status);
             where += ` AND la.status = $${params.length}`;
@@ -438,7 +472,6 @@ export const getAllApplications = async (req, res) => {
              LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
             [...params, limit, offset]
         );
-
         res.json({ success: true, data: { applications: result.rows } });
     } catch (error) {
         console.error('Get applications error:', error);
@@ -466,6 +499,12 @@ export const reviewLoan = async (req, res) => {
         }
         const loan = loanRes.rows[0];
         let approved = false;
+
+        // Group admins may only review loans for their own group's borrowers.
+        if (!(await adminCanAccessBorrower(client.query.bind(client), req.user, loan.borrower_id))) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ success: false, message: 'This loan belongs to another group' });
+        }
 
         if (action === 'reject') {
             await client.query(
@@ -575,6 +614,15 @@ export const getAdminStats = async (req, res) => {
         return res.status(403).json({ success: false, message: 'Admin access required' });
     }
     try {
+        // Group admins are scoped to their own group's borrowers so the
+        // dashboard totals reflect only what their group actually lent.
+        const isSuper = req.user.role === 'superadmin';
+        const scopeJoin = isSuper ? '' : 'JOIN users su ON su.id = la.borrower_id';
+        const scopeWhere = isSuper
+            ? ''
+            : `WHERE (su.group_id = $1 OR su.created_by = $2)`;
+        const scopeParams = isSuper ? [] : [req.user.groupId || null, Number(req.user.id)];
+
         const [overview, byStatus, byType, pendingRepayments] = await Promise.all([
             pool.query(
                 `SELECT
@@ -585,10 +633,23 @@ export const getAdminStats = async (req, res) => {
                     COALESCE(SUM(lac.total_paid), 0) as total_collected,
                     COALESCE(SUM(la.principal_amount) FILTER (WHERE la.status IN ('active','disbursed')), 0) as total_portfolio
                  FROM loan_applications la
-                 LEFT JOIN loan_accounts lac ON lac.loan_id = la.id`
+                 LEFT JOIN loan_accounts lac ON lac.loan_id = la.id
+                 ${scopeJoin}
+                 ${scopeWhere}`,
+                scopeParams
             ),
-            pool.query(`SELECT status, COUNT(*) as count FROM loan_applications GROUP BY status`),
-            pool.query(`SELECT loan_type, COUNT(*) as count, SUM(principal_amount) as total FROM loan_applications GROUP BY loan_type`),
+            pool.query(
+                `SELECT la.status, COUNT(*) as count
+                 FROM loan_applications la ${scopeJoin} ${scopeWhere}
+                 GROUP BY la.status`,
+                scopeParams
+            ),
+            pool.query(
+                `SELECT la.loan_type, COUNT(*) as count, SUM(la.principal_amount) as total
+                 FROM loan_applications la ${scopeJoin} ${scopeWhere}
+                 GROUP BY la.loan_type`,
+                scopeParams
+            ),
             pool.query(
                 `SELECT r.id, r.loan_id, r.amount, r.channel, r.reference, r.proof_note, r.submitted_at,
                         u.name as borrower_name, la.application_number
@@ -596,7 +657,9 @@ export const getAdminStats = async (req, res) => {
                  JOIN users u ON u.id = r.borrower_id
                  JOIN loan_applications la ON la.id = r.loan_id
                  WHERE r.status = 'pending'
-                 ORDER BY r.submitted_at ASC`
+                 ${isSuper ? '' : 'AND (u.group_id = $1 OR u.created_by = $2)'}
+                 ORDER BY r.submitted_at ASC`,
+                scopeParams
             ),
         ]);
 
@@ -715,6 +778,13 @@ export const verifyRepayment = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Repayment not found' });
         }
         const repayment = repayRes.rows[0];
+
+        // Group admins may only verify repayments for their own group's borrowers.
+        if (!(await adminCanAccessBorrower(client.query.bind(client), req.user, repayment.borrower_id))) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ success: false, message: 'This repayment belongs to another group' });
+        }
+
         if (repayment.status !== 'pending') {
             await client.query('ROLLBACK');
             return res.status(400).json({ success: false, message: 'Repayment already processed' });

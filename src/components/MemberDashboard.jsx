@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { authFetch } from '../utils/api';
 import { formatNaira, formatDate, getStatusBadgeClass } from '../utils/formatters';
 import { Wallet, Calendar, Award, ShieldCheck, CheckCircle2, Clock, Landmark, Send, Users, Circle, CalendarCheck } from 'lucide-react';
+import CentralAccountCard from './CentralAccountCard';
+import ContributionCheckboxCard, { buildUnitsFromTotal } from './ContributionCheckboxCard';
 
 // Personal dashboard for a regular member: shows their own contributions,
 // their payout position, their group's account, a withdrawal panel, and
@@ -81,7 +83,11 @@ export default function MemberDashboard({ groups }) {
   let overdueCount = 0;
   Object.values(myContributions).forEach(cycle => {
     (cycle || []).forEach(c => {
-      if (c.status === 'Verified') { totalPaid += group.contributionAmount; paidCount++; }
+      // Prefer the amount actually logged by the admin: a single verified
+      // transfer can cover several cycles of the member's plan, and using the
+      // group default would understate what they have paid.
+      const logged = Number(c.amount) || Number(group.contributionAmount) || 0;
+      if (c.status === 'Verified') { totalPaid += logged; paidCount++; }
       else if (c.status === 'Pending Verification') pendingCount++;
       else if (c.status === 'Overdue') overdueCount++;
     });
@@ -92,10 +98,10 @@ export default function MemberDashboard({ groups }) {
   const myPastPayouts = mySchedule.filter(s => s.status === 'Disbursed');
   const cycles = Object.keys(myContributions).sort((a, b) => Number(a) - Number(b));
 
-  // --- Contribution Plan (tick card) ---
-  // One unit = the amount the member accepted to contribute per day/week/month.
-  // When the admin approves a transfer, its logged amount is divided by this
-  // unit amount to work out how many units (days/weeks/months) get ticked.
+  // --- Contribution checklist ---
+  // One box = one unit of the plan this member accepted (a day, week, fortnight
+  // or month, depending on the group's frequency). Boxes tick according to how
+  // much the admin has APPROVED for this member, not by counting records.
   const frequency = group.frequency || 'Weekly';
   const freqLower = String(frequency).toLowerCase();
   const perUnitLabel = freqLower.includes('daily') ? 'Day'
@@ -114,9 +120,12 @@ export default function MemberDashboard({ groups }) {
     });
   });
 
-  const tickedUnits = perUnitAmount > 0 ? Math.floor(totalVerifiedAmount / perUnitAmount) : 0;
-  const partialRemainder = totalVerifiedAmount - (tickedUnits * perUnitAmount);
-  const targetUnits = Math.max(Number(group.totalCycles) || 1, tickedUnits, 1);
+  const checklist = buildUnitsFromTotal({
+    totalPaid: totalVerifiedAmount,
+    perUnitAmount,
+    targetUnits: Number(group.totalCycles) || 1,
+    perUnitLabel
+  });
 
   return (
     <div>
@@ -181,69 +190,30 @@ export default function MemberDashboard({ groups }) {
         </div>
       )}
 
-      {/* My Contribution Plan — tick card (updates when the admin approves a transfer) */}
-      <div className="glass-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <CalendarCheck className="w-5 h-5 text-emerald-400" /> My Contribution Plan
-          </h3>
-          <span className="badge badge-success">
-            {tickedUnits} of {targetUnits} {perUnitLabel.toLowerCase()}s ticked
-          </span>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
-          <div style={{ background: 'var(--success-bg)', border: '1px solid var(--border-card-accent)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem' }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>My Plan</div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)' }}>
-              {formatNaira(perUnitAmount)} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>per {perUnitLabel.toLowerCase()}</span>
-            </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{frequency} frequency</div>
-          </div>
-          <div style={{ background: 'var(--success-bg)', border: '1px solid var(--border-card-accent)', borderRadius: 'var(--radius-sm)', padding: '0.75rem 1rem' }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Total Verified</div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--primary-light)' }}>{formatNaira(totalVerifiedAmount)}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              {tickedUnits} {perUnitLabel.toLowerCase()}{tickedUnits === 1 ? '' : 's'} covered
-              {partialRemainder > 0 && ` + ${formatNaira(partialRemainder)} partial`}
-            </div>
-          </div>
-        </div>
-
-        {/* Tick table: one slot per Day/Week/Month */}
-        <div style={{ overflowX: 'auto' }}>
-          <table className="table" style={{ width: '100%' }}>
-            <thead>
-              <tr>
-                <th>{perUnitLabel}</th>
-                <th>Amount</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: targetUnits }, (_, i) => i + 1).map(n => {
-                const isTicked = n <= tickedUnits;
-                return (
-                  <tr key={n} style={{ opacity: isTicked ? 1 : 0.65 }}>
-                    <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{perUnitLabel} {n}</td>
-                    <td>{formatNaira(perUnitAmount)}</td>
-                    <td>
-                      {isTicked ? (
-                        <span className="badge badge-success"><CheckCircle2 className="w-3.5 h-3.5" /> Ticked</span>
-                      ) : (
-                        <span className="badge badge-neutral"><Circle className="w-3.5 h-3.5" /> Pending</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* My Contribution Checklist — one check box per unit the member agreed to
+          contribute, ticked by the amount the admin has verified. */}
+      <ContributionCheckboxCard
+        title="My Contribution Checklist"
+        subtitle={`Your personal account: ${formatNaira(perUnitAmount)} per ${perUnitLabel.toLowerCase()}, as agreed on ${group.name}.`}
+        units={checklist.units}
+        perUnitLabel={perUnitLabel}
+        perUnitAmount={perUnitAmount}
+        ticked={checklist.ticked}
+        total={checklist.total}
+        paid={checklist.paid}
+        target={checklist.target}
+        remainder={checklist.remainder}
+        hiddenCount={checklist.hiddenCount}
+        frequencyLabel={`${frequency} frequency`}
+        emptyMessage="Your contribution plan has not been set yet. Ask your group admin to record the amount you accepted to contribute."
+        footnote="Each box represents one contribution you agreed to make. Boxes tick automatically as your group admin verifies the money you have paid in."
+      />
 
       {/* Group account + withdrawal */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+        {/* Central account — the platform account all contributions are paid into */}
+        <CentralAccountCard />
+
         {/* Group bank account — where members pay into */}
         <div className="glass-card" style={{ padding: '1.25rem' }}>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.75rem' }}>

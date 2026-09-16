@@ -1,12 +1,12 @@
 import React from 'react';
-import { Plus, RotateCcw, Sun, Moon, LogOut } from 'lucide-react';
+import { Plus, RotateCcw, Sun, Moon, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import NotificationBell from './NotificationBell';
 
 // Top navigation bar: brand on the left, action icons on the right.
 // Actions: Create SaveCircle Pool, Reset Demo (superadmin), theme toggle, logout.
-export default function TopNav({ onOpenCreateModal, onResetDemoData, onNavigate }) {
+export default function TopNav({ onOpenCreateModal, onResetDemoData, onNavigate, onOpenSidebar }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
@@ -41,22 +41,18 @@ export default function TopNav({ onOpenCreateModal, onResetDemoData, onNavigate 
   };
 
   return (
-    <header style={{
-      height: '60px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: '1rem',
-      padding: '0 1.5rem',
-      background: 'var(--bg-surface)',
-      borderBottom: '1px solid var(--border-card)',
-      position: 'sticky',
-      top: 0,
-      zIndex: 50
-    }}>
-      {/* Brand */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
-        <div>
+    <header className="topnav">
+      {/* Brand + mobile drawer trigger */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', minWidth: 0 }}>
+        <button
+          className="mobile-menu-btn"
+          onClick={onOpenSidebar}
+          title="Open menu"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
             <strong>SaveCircle</strong>
           </div>
@@ -67,23 +63,38 @@ export default function TopNav({ onOpenCreateModal, onResetDemoData, onNavigate 
       </div>
 
       {/* Action icons */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
         {isAdmin && (
           <button
             onClick={onOpenCreateModal}
             title="Create SaveCircle Pool"
-            className="btn btn-gold btn-sm"
+            aria-label="Create SaveCircle Pool"
+            className="btn btn-gold btn-sm desktop-only"
             style={{ height: '36px' }}
           >
             <Plus className="w-4 h-4" /> Create SaveCircle Pool
           </button>
         )}
 
+        {isAdmin && (
+          <button
+            onClick={onOpenCreateModal}
+            title="Create SaveCircle Pool"
+            aria-label="Create SaveCircle Pool"
+            className="btn btn-gold btn-sm mobile-only"
+            style={{ width: '36px', height: '36px', padding: 0 }}
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        )}
+
+        {/* Demo-data reset is a maintenance action — desktop only. */}
         {isSuper && (
           <button
             onClick={onResetDemoData}
             title="Reset demo data"
             style={iconBtn}
+            className="desktop-only"
           >
             <RotateCcw className="w-4 h-4" />
           </button>

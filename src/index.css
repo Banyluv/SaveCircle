@@ -68,6 +68,21 @@
   --overlay-bg: rgba(247, 251, 248, 0.88);
   --soft-bg: #e6f2ea;
   --banner-bg: linear-gradient(135deg, rgba(0, 135, 81, 0.12) 0%, rgba(0, 135, 81, 0.04) 100%);
+
+  /* --- Stacking order -----------------------------------------------------
+     Declared in ONE place because the layers genuinely have to interleave.
+     Previously every component picked its own number (modals used 100 while
+     the floating install prompt used 300 and the toast 200), so a modal could
+     render UNDERNEATH a prompt and its buttons became unclickable. Order:
+     page chrome < popovers < floating prompts < modals < toast. */
+  --z-sidebar: 40;
+  --z-topnav: 50;
+  --z-drawer-backdrop: 80;
+  --z-drawer: 90;
+  --z-popover: 200;   /* notification dropdown, AI chat panel */
+  --z-prompt: 250;    /* floating install / update banners (non-blocking) */
+  --z-modal: 300;     /* dialogs the user opened — must sit above prompts */
+  --z-toast: 400;     /* always the topmost thing on screen */
 }
 
 /* Optional dark theme, tinted green instead of navy */
@@ -325,7 +340,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: var(--z-modal);
   padding: 1rem;
   animation: fadeIn 0.2s ease-out;
 }
@@ -563,3 +578,354 @@ body {
 .text-rose-400 { color: var(--danger); }
 .text-blue-400 { color: var(--info); }
 .text-emerald-500 { color: var(--success); }
+
+/* ==================================================================
+   MOBILE / RESPONSIVE LAYOUT
+   ------------------------------------------------------------------
+   Two-column form grids must live in a CSS class rather than an inline
+   `gridTemplateColumns`, because inline styles win over media queries and
+   could never collapse. Anything that changes across breakpoints is here.
+   ================================================================== */
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Horizontal scroll for wide data tables (instead of squashed columns) */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── Contribution checklist card ───────────────────────────────────────────
+   One box per contribution unit the user committed to. Used on the member
+   dashboard and on the loan-borrower view, so it must not assume a thrift
+   group exists. */
+.checklist-card {
+  container-type: inline-size;
+}
+
+.checklist-stat {
+  background: var(--success-bg);
+  border: 1px solid var(--border-card-accent);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+}
+
+.checklist-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.checklist-stat-value {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-top: 0.15rem;
+}
+
+.checklist-bar {
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--neutral-bg);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.checklist-bar-fill {
+  height: 100%;
+  background: var(--brand-gradient);
+  border-radius: 9999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.checklist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem;
+}
+
+.checklist-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-card);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+.checklist-box.checked {
+  background: var(--success-bg);
+  border-color: var(--border-card-accent);
+  color: var(--success-text);
+}
+
+.checklist-box-mark {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--text-dim);
+}
+
+.checklist-box.checked .checklist-box-mark {
+  color: var(--primary-light);
+}
+
+.checklist-box-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.checklist-box-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.checklist-box.checked .checklist-box-label {
+  color: var(--success-text);
+}
+
+.checklist-box-amount {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.checklist-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Shown only on small screens / only on large screens */
+.mobile-only { display: none !important; }
+.desktop-only { display: inline-flex; }
+
+/* ─── Mobile step navigation (Back / Next footer) ───────────────────────────
+   Multi-step modals put their controls in this bar. Sticky to the bottom of the
+   modal so the buttons stay reachable on a tall form without scrolling back. */
+.step-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-card);
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-surface);
+}
+
+.step-actions .step-spacer {
+  flex: 1;
+}
+
+/* ─── Mobile back bar ────────────────────────────────────────────────────────
+   A predictable "Back" affordance at the top of a secondary screen, so a phone
+   user is never stranded on a page with no way back. Only rendered on mobile. */
+.mobile-back-bar {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mobile-back-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-card);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.mobile-back-bar button:hover {
+  border-color: var(--primary-light);
+  color: var(--primary-light);
+}
+
+.mobile-back-bar .mobile-back-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobile drawer nav button (hidden until the mobile breakpoint) */
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-hover);
+  border: 1px solid var(--border-card);
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+/* --- Sidebar: sticky column on desktop, off-canvas drawer on mobile --- */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-card);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sidebar);
+}
+
+/* --- Top bar --- */
+.topnav {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-card);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-topnav);
+}
+
+/* Tablet / large phone */
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 268px;
+    min-width: 268px;
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: var(--z-drawer);
+    box-shadow: var(--shadow-lg);
+    border-right: none;
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-drawer-backdrop);
+    background: rgba(6, 78, 48, 0.45);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    animation: fadeIn 0.18s ease-out;
+  }
+
+  .mobile-menu-btn { display: inline-flex; }
+  .desktop-only { display: none !important; }
+  .mobile-only { display: inline-flex !important; }
+
+  /* Mobile-only back affordance becomes available */
+  .mobile-back-bar { display: flex; }
+
+  /* Roomier taps for the checklist boxes on a phone */
+  .checklist-grid { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+  .checklist-box { padding: 0.6rem 0.65rem; }
+
+  /* Step buttons go full width so they are easy to hit with a thumb */
+  .step-actions { flex-direction: row; }
+  .step-actions .btn { flex: 1; justify-content: center; }
+
+  .grid-2 { grid-template-columns: 1fr; }
+
+  .topnav { padding: 0 0.85rem; gap: 0.5rem; }
+
+  .app-container {
+    padding: 1rem 0.85rem 2rem !important;
+    max-width: 100%;
+  }
+
+  /* Stack the banner content instead of squeezing it side by side */
+  .calabar-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 1rem;
+  }
+
+  /* Modals become bottom sheets that use the full width */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal-content {
+    max-width: 100% !important;
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 1.25rem;
+    animation: sheetUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Let tables scroll rather than crushing every column */
+  .table { min-width: 520px; }
+  .table th, .table td { padding: 0.6rem 0.7rem; }
+
+  /* Chat bubble / panel fits small screens */
+  .ai-chat-panel {
+    right: 0.75rem !important;
+    left: 0.75rem !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* Give the floating assistant room above the phone's home indicator */
+  .ai-chat-bubble { bottom: 1rem; right: 0.85rem; }
+}
+
+/* Small phone */
+@media (max-width: 480px) {
+  .topnav { height: 56px; }
+  .app-container { padding: 0.85rem 0.7rem 2rem !important; }
+
+  .glass-card { border-radius: var(--radius-md); }
+  .modal-content { padding: 1rem; }
+
+  /* Headline sizes that would otherwise wrap awkwardly */
+  .hide-xs { display: none !important; }
+}
+
+@keyframes sheetUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Respect the safe areas of notched / gesture-bar phones */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .sidebar { padding-bottom: env(safe-area-inset-bottom); }
+  @media (max-width: 900px) {
+    .app-container { padding-bottom: calc(2rem + env(safe-area-inset-bottom)) !important; }
+  }
+}

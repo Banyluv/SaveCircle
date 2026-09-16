@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { formatNaira } from '../utils/formatters';
-import { Search, MapPin, Users, Wallet, ArrowUpRight, Plus, ShieldCheck } from 'lucide-react';
+import { Search, MapPin, Users, Wallet, ArrowUpRight, Plus, ShieldCheck, Pencil } from 'lucide-react';
+import EditGroupModal from './EditGroupModal';
 
-export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) {
+export default function GroupList({ groups, onSelectGroup, onOpenCreateModal, onGroupUpdated }) {
   const { user } = useAuth();
   const isAdminUser = ['admin', 'superadmin', 'trustee'].includes(user?.role);
   const [searchTerm, setSearchTerm] = useState('');
   const [frequencyFilter, setFrequencyFilter] = useState('ALL');
+  // The group currently being edited (null = dialog closed)
+  const [editGroup, setEditGroup] = useState(null);
 
   const filteredGroups = groups.filter(g => {
     const matchesSearch = g.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -135,7 +138,7 @@ export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) 
                     padding: '0.85rem',
                     marginBottom: '1rem',
                     display: 'grid',
-                    gridTemplateColumns: '1fr 1fr',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
                     gap: '0.5rem'
                   }}>
                     <div>
@@ -185,15 +188,37 @@ export default function GroupList({ groups, onSelectGroup, onOpenCreateModal }) 
                   <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                     <Users className="w-3.5 h-3.5" /> {group.members.length} Members
                   </span>
-                  <span style={{ color: 'var(--primary-light)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                    Manage Pool <ArrowUpRight className="w-4 h-4" />
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    {/* stopPropagation: the whole card is clickable, so an edit
+                        click must not also open the group. */}
+                    {isAdminUser && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setEditGroup(group); }}
+                        className="btn btn-outline btn-sm"
+                        title={`Edit ${group.name}`}
+                        style={{ fontSize: '0.75rem' }}
+                      >
+                        <Pencil className="w-3.5 h-3.5" /> Edit
+                      </button>
+                    )}
+                    <span style={{ color: 'var(--primary-light)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      Manage Pool <ArrowUpRight className="w-4 h-4" />
+                    </span>
+                  </div>
                 </div>
               </div>
             );
           })
         )}
       </div>
+
+      {editGroup && (
+        <EditGroupModal
+          group={editGroup}
+          onClose={() => setEditGroup(null)}
+          onSaved={(updated) => { if (onGroupUpdated) onGroupUpdated(updated); }}
+        />
+      )}
     </div>
   );
 }

@@ -36,6 +36,30 @@
                 {
                     "key": "CORS_ORIGIN",
                     "sync": false
+                },
+                {
+                    "key": "APK_URL",
+                    "sync": false
+                },
+                {
+                    "key": "APP_VERSION_CODE",
+                    "sync": false
+                },
+                {
+                    "key": "APP_VERSION_NAME",
+                    "sync": false
+                },
+                {
+                    "key": "APP_APK_SHA256",
+                    "sync": false
+                },
+                {
+                    "key": "APP_RELEASE_NOTES",
+                    "sync": false
+                },
+                {
+                    "key": "APP_FORCE_UPDATE",
+                    "sync": false
                 }
             ]
         }

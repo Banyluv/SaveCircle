@@ -29,7 +29,8 @@ const publicUser = (user) => ({
     orgName: user.orgName || user.org_name || null,
     phone: user.phone || null,
     address: user.address || null,
-    isLoanBorrower: ['individual', 'cooperative'].includes(user.role || user.role)
+    isLoanBorrower: ['individual', 'cooperative'].includes(user.role || user.role),
+    createdBy: user.createdBy ?? user.created_by ?? null
 });
 
 export const loginUser = async (req, res) => {
@@ -99,7 +100,10 @@ export const registerUser = async (req, res) => {
             contributionAmount: contributionAmount != null ? contributionAmount : null,
             orgName: orgName || null,
             phone: phone || null,
-            address: address || null
+            address: address || null,
+            // Attribute borrowers to the admin who registered them so a group
+            // admin's borrower list stays scoped to their own group.
+            createdBy: req.user ? req.user.id : null
         });
 
         if (user) {
@@ -123,8 +127,15 @@ export const getUsers = async (req, res) => {
         const adminOrSuper = ['admin', 'superadmin'].includes(req.user.role);
         const loanBorrower = ['individual', 'cooperative'].includes(req.user.role);
         if (req.user.role === 'admin') {
-            // Admins see their group's members + all loan-only borrowers
-            result = users.filter(u => (u.groupId === req.user.groupId || u.group_id === req.user.groupId) || ['individual', 'cooperative'].includes(u.role));
+            // Admins see their own group's members, plus ONLY the loan borrowers
+            // they registered. They must not see another group's members or
+            // another admin's borrowers.
+            result = users.filter(u => {
+                const inMyGroup = (u.groupId || u.group_id) === req.user.groupId;
+                if (inMyGroup) return true;
+                const isBorrower = ['individual', 'cooperative'].includes(u.role);
+                return isBorrower && Number(u.createdBy ?? u.created_by) === Number(req.user.id);
+            });
         } else if (req.user.role === 'superadmin') {
             // already all
         } else if (req.user.role === 'member') {

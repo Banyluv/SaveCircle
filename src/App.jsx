@@ -16,6 +16,8 @@ import MemberDashboard from './components/MemberDashboard';
 import MembersList from './components/MembersList';
 import AdminsList from './components/AdminsList';
 import AiChat from './components/AiChat';
+import CentralAccount from './components/CentralAccount';
+import InstallPrompt from './components/InstallPrompt';
 import LoansArea from './components/Loans/LoansArea';
 import { useAuth } from './context/AuthContext';
 
@@ -30,6 +32,9 @@ export default function App() {
 
   const [activeNav, setActiveNav] = useState('dashboard'); // 'dashboard', 'groups', 'contributions', 'members', 'admins', 'audit', 'group-detail'
   const [selectedGroupId, setSelectedGroupId] = useState(null);
+  // Off-canvas navigation drawer (mobile/tablet only; the sidebar is a static
+  // column on desktop, where this state is simply unused).
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -138,6 +143,15 @@ export default function App() {
     setGroups(prev => [newGroup, ...prev]);
     addAuditLog(newGroup.name, 'Create Group', `Created new SaveCircle group in ${newGroup.hubLocation} with ${newGroup.members.length} members.`);
     showToast(`Created ${newGroup.name} successfully!`);
+  };
+
+  // A group was edited. GroupList/GroupDetail persist the change themselves
+  // (POST /api/groups/sync) and hand back the saved document, so we only need to
+  // reflect it in local state — the sync effect below would otherwise re-post.
+  const handleGroupUpdated = (updated) => {
+    setGroups(prev => prev.map(g => (g.id === updated.id ? { ...g, ...updated } : g)));
+    addAuditLog(updated.name, 'Update Group', `Updated group details, contribution rules or bank account.`);
+    showToast(`${updated.name} updated successfully!`);
   };
 
   // Log Payment submit
@@ -296,6 +310,7 @@ export default function App() {
 
   const handleNav = (tab) => {
     setActiveNav(tab);
+    setSidebarOpen(false);
     if (tab !== 'group-detail') setSelectedGroupId(null);
   };
 
@@ -316,18 +331,35 @@ export default function App() {
           backgroundRepeat: 'repeat'
         }}
       />
-      {/* Sidebar (modules only) */}
+      {/* Sidebar (modules only) — static column on desktop, drawer on mobile */}
       <Sidebar
         activeNav={activeNav}
         setActiveNav={handleNav}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
 
-      <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1 }}>
+      {/* Tap-outside backdrop; only ever rendered while the drawer is open */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* NOTE: `main` must NOT set z-index. A z-index here creates a stacking
+          context, which traps every modal rendered inside it (all of them are)
+          beneath the floating install/update banners and popovers. Position
+          relative alone is enough to sit above the watermark, because the
+          watermark is earlier in the DOM. */}
+      <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative' }}>
         {/* Top navbar: brand + actions (Create, Reset, Theme, Logout) */}
         <TopNav
           onOpenCreateModal={() => setIsCreateModalOpen(true)}
           onResetDemoData={handleResetDemoData}
           onNavigate={handleNav}
+          onOpenSidebar={() => setSidebarOpen(true)}
         />
         <div className="app-container" style={{ flex: 1, padding: '1.5rem 1.75rem' }}>
           {/* Member personal dashboard */}
@@ -357,6 +389,7 @@ export default function App() {
               groups={groups}
               onSelectGroup={handleSelectGroup}
               onOpenCreateModal={() => setIsCreateModalOpen(true)}
+              onGroupUpdated={handleGroupUpdated}
             />
           )}
 
@@ -369,6 +402,7 @@ export default function App() {
               onViewReceipt={(receipt) => setReceiptData(receipt)}
               onOpenSwapModal={(g) => setSwapGroup(g)}
               onDisbursePayout={handleDisbursePayout}
+              onGroupUpdated={handleGroupUpdated}
               readOnly={isMember}
             />
           )}
@@ -377,15 +411,20 @@ export default function App() {
             <MembersList
               groups={groups}
               onOpenRegisterModal={() => setIsRegisterModalOpen(true)}
+              onBack={() => handleNav('dashboard')}
             />
           )}
 
           {activeNav === 'admins' && (
-            <AdminsList groups={groups} />
+            <AdminsList groups={groups} onBack={() => handleNav('dashboard')} />
           )}
 
           {activeNav === 'loans' && (
             <LoansArea />
+          )}
+
+          {(activeNav === 'central-account') && isAdmin && (
+            <CentralAccount onNotify={showToast} />
           )}
 
           {activeNav === 'audit' && (
@@ -401,6 +440,7 @@ export default function App() {
               onViewReceipt={(receipt) => setReceiptData(receipt)}
               onOpenSwapModal={(g) => setSwapGroup(g)}
               onDisbursePayout={handleDisbursePayout}
+              onGroupUpdated={handleGroupUpdated}
             />
           )}
         </div>
@@ -449,6 +489,9 @@ export default function App() {
 
       {/* Floating AI Assistant */}
       <AiChat groups={groups} />
+
+      {/* "Install the Android app" prompt — phone browsers only */}
+      <InstallPrompt />
     </div>
   );
 }

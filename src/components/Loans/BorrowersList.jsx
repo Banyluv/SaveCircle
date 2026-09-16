@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, User, Building2, UserPlus, Users } from 'lucide-react';
+import { RefreshCw, User, Building2, UserPlus, Users, Pencil } from 'lucide-react';
 import { loanAPI } from '../../utils/api';
 import { formatNaira, formatDate } from '../../utils/formatters';
 import AddBorrowerModal from './AddBorrowerModal';
+import EditUserModal from '../EditUserModal';
+import MobileBackBar from '../MobileBackBar';
 
 // Admin: registered loan-only borrowers (individuals + cooperatives).
 // Lets the admin manage them and apply for a loan on their behalf.
-export default function BorrowersList() {
+export default function BorrowersList({ onBack }) {
   const [borrowers, setBorrowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAdd, setShowAdd] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
 
   const load = () => {
     setLoading(true);
@@ -25,6 +28,8 @@ export default function BorrowersList() {
 
   return (
     <div>
+      <MobileBackBar onBack={onBack} label="Back" title="Loan Borrowers" />
+
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
         <div>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -57,7 +62,7 @@ export default function BorrowersList() {
           <table className="table">
             <thead>
               <tr>
-                <th>Type</th><th>Name</th><th>Contact</th><th>Bank</th><th>Active Loans</th><th>Pending</th><th>Outstanding</th><th>Registered</th>
+                <th>Type</th><th>Name</th><th>Contact</th><th>Bank</th><th>Active Loans</th><th>Pending</th><th>Outstanding</th><th>Registered</th><th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -81,6 +86,16 @@ export default function BorrowersList() {
                   <td>{b.pending_loans || 0}</td>
                   <td style={{ fontWeight: 600 }}>{formatNaira(b.outstanding || 0)}</td>
                   <td>{formatDate(b.created_at)}</td>
+                  <td>
+                    <button
+                      onClick={() => setEditTarget(b)}
+                      className="btn btn-outline btn-sm"
+                      title={`Edit ${b.name}`}
+                      style={{ fontSize: '0.75rem' }}
+                    >
+                      <Pencil className="w-3.5 h-3.5" /> Edit
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -90,6 +105,14 @@ export default function BorrowersList() {
 
       {showAdd && (
         <AddBorrowerModal onClose={() => setShowAdd(false)} onAdded={load} />
+      )}
+
+      {editTarget && (
+        <EditUserModal
+          target={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={() => { setEditTarget(null); load(); }}
+        />
       )}
     </div>
   );

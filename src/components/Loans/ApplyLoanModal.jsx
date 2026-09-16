@@ -129,7 +129,7 @@ export default function ApplyLoanModal({ onClose, onApplied }) {
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1.25rem' }}>
+          <div className="grid-2" style={{ gap: '0 1.25rem' }}>
             {products.length > 0 && (
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                 <label>Loan Product Template (optional — auto-fills terms)</label>

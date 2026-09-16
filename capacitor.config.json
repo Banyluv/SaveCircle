@@ -1,0 +1,11 @@
+{
+  "appId": "com.savecircle.app",
+  "appName": "SaveCircle",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": true
+  },
+  "server": {
+    "cleartext": true
+  }
+}

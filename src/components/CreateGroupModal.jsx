@@ -129,7 +129,7 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
           </div>
 
           {/* Contribution Amount & Frequency */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="grid-2" style={{ gap: '1rem' }}>
             <div className="form-group">
               <label>Contribution Amount (₦):</label>
               <input 
@@ -188,7 +188,7 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
           </div>
 
           {/* Trustee / Group Leader Info */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="grid-2" style={{ gap: '1rem' }}>
             <div className="form-group">
               <label>Trustee / Iya SaveCircle Name:</label>
               <input 
@@ -223,7 +223,7 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
             <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Wallet className="w-4 h-4" /> Group Bank Account <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(members pay into & withdraw from this)</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="grid-2" style={{ gap: '1rem' }}>
               <div className="form-group">
                 <label>Bank Name:</label>
                 <input 
@@ -257,7 +257,9 @@ export default function CreateGroupModal({ onClose, onCreateGroup }) {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+          {/* Sticky action bar so the submit button is reachable on a phone,
+              where this form is longer than the viewport. */}
+          <div className="step-actions">
             <button type="button" onClick={onClose} className="btn btn-outline">
               Cancel
             </button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, Building2, UserPlus, Calculator, FileText, CheckCircle2 } from 'lucide-react';
+import { X, User, Building2, UserPlus, Calculator, FileText, CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react';
 import { loanAPI } from '../../utils/api';
 import { formatNaira } from '../../utils/formatters';
 import { LOAN_TYPE_LABELS, INTEREST_TYPE_LABELS, FREQUENCY_LABELS } from './loanMeta';
@@ -198,7 +198,7 @@ export default function AddBorrowerModal({ onClose, onAdded }) {
             </p>
 
             <form onSubmit={registerBorrower} style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1.25rem' }}>
+              <div className="grid-2" style={{ gap: '0 1.25rem' }}>
                 {tab === 'cooperative' && (
                   <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                     <label>Cooperative / Organisation Name</label>
@@ -229,7 +229,7 @@ export default function AddBorrowerModal({ onClose, onAdded }) {
 
               <div style={{ border: '1px solid var(--border-card-accent)', borderRadius: 'var(--radius-md)', padding: '1rem', background: 'var(--success-bg)', marginBottom: '1rem' }}>
                 <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: '0.75rem' }}>Bank Details (for loan disbursement & repayments)</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1.25rem' }}>
+                <div className="grid-2" style={{ gap: '0 1.25rem' }}>
                   <div className="form-group">
                     <label>Bank Name</label>
                     <input className="form-input" value={reg.bankName} onChange={(e) => setR('bankName', e.target.value)} placeholder="e.g. Zenith Bank" />
@@ -245,8 +245,8 @@ export default function AddBorrowerModal({ onClose, onAdded }) {
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-primary" disabled={busy}>
-                {busy ? 'Creating…' : 'Register Account'}
+              <button type="submit" className="btn btn-primary" disabled={busy} style={{ width: '100%' }}>
+                {busy ? 'Creating…' : 'Register Account & Continue'}
               </button>
             </form>
           </>
@@ -272,7 +272,7 @@ export default function AddBorrowerModal({ onClose, onAdded }) {
 
             {wantLoan && (
               <form onSubmit={applyForBorrower}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1.25rem' }}>
+                <div className="grid-2" style={{ gap: '0 1.25rem' }}>
                   {products.length > 0 && (
                     <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                       <label>Loan Product Template</label>
@@ -335,10 +335,29 @@ export default function AddBorrowerModal({ onClose, onAdded }) {
                   </div>
                 )}
 
-                <button type="submit" className="btn btn-primary" disabled={busy}>
-                  {busy ? 'Submitting…' : 'Submit Loan Application'}
-                </button>
+                {/* Back / Next so the two steps are navigable on a phone */}
+                <div className="step-actions">
+                  <button type="button" className="btn btn-outline" onClick={() => setWantLoan(false)}>
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={busy}>
+                    {busy ? 'Submitting…' : 'Submit Loan Application'}
+                  </button>
+                </div>
               </form>
+            )}
+
+            {/* Always offer a way back to the previous step, even after choosing
+                "Done" or before deciding on the loan. */}
+            {!wantLoan && (
+              <div className="step-actions">
+                <button type="button" className="btn btn-outline" onClick={() => setRegistered(null)}>
+                  <ArrowLeft className="w-4 h-4" /> Back to details
+                </button>
+                <button type="button" className="btn btn-outline" onClick={onClose}>
+                  Done
+                </button>
+              </div>
             )}
           </div>
         )}

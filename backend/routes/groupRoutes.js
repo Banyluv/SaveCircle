@@ -5,7 +5,9 @@ import { protect } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 router.route('/').get(protect, getGroups);
-router.route('/sync').post(syncGroups);
+// Was unauthenticated — anyone could overwrite every group. The controller now
+// scopes writes to the caller's own group (superadmin may write all).
+router.route('/sync').post(protect, syncGroups);
 router.route('/:id').get(protect, getGroupById);
 
 export default router;

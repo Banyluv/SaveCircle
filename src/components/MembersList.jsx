@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { authFetch } from '../utils/api';
-import { Users, UserPlus, Trash2, CalendarClock, CheckCircle2 } from 'lucide-react';
+import { Users, UserPlus, Trash2, CalendarClock, CheckCircle2, Pencil } from 'lucide-react';
 import { formatNaira } from '../utils/formatters';
+import EditUserModal from './EditUserModal';
+import MobileBackBar from './MobileBackBar';
 
 // Admin: lists the members of their own group (and admins/superadmin see relevant users).
-export default function MembersList({ onOpenRegisterModal, groups }) {
+export default function MembersList({ onOpenRegisterModal, groups, onBack }) {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [withdrawDateInput, setWithdrawDateInput] = useState({}); // userId -> date string
+  // The account currently being edited (null = dialog closed)
+  const [editTarget, setEditTarget] = useState(null);
 
   // The admin's own group (for context)
   const myGroup = (groups || []).find(g => g.id === user?.groupId) || (groups || [])[0];
@@ -96,6 +100,8 @@ export default function MembersList({ onOpenRegisterModal, groups }) {
 
   return (
     <div>
+      <MobileBackBar onBack={onBack} label="Back to Dashboard" title="Members" />
+
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
         <div>
           <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -202,11 +208,24 @@ export default function MembersList({ onOpenRegisterModal, groups }) {
                             )}
                           </>
                         )}
-                        {u.id !== user?.id && (
-                          <button onClick={() => handleDelete(u.id)} title="Remove user" style={{ background: 'none', border: 'none', color: 'var(--danger-text)', cursor: 'pointer', display: 'inline-flex' }}>
-                            <Trash2 className="w-4 h-4" />
+
+                        {/* Edit: one entry point for every field on the account
+                            (name, bank, contribution, withdrawal date, role). */}
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                          <button
+                            onClick={() => setEditTarget(u)}
+                            className="btn btn-outline btn-sm"
+                            title={`Edit ${u.name}`}
+                            style={{ fontSize: '0.75rem' }}
+                          >
+                            <Pencil className="w-3.5 h-3.5" /> Edit
                           </button>
-                        )}
+                          {u.id !== user?.id && (
+                            <button onClick={() => handleDelete(u.id)} title="Remove user" style={{ background: 'none', border: 'none', color: 'var(--danger-text)', cursor: 'pointer', display: 'inline-flex' }}>
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </td>
                   )}
@@ -215,6 +234,19 @@ export default function MembersList({ onOpenRegisterModal, groups }) {
             </tbody>
           </table>
         </div>
+      )}
+
+      {editTarget && (
+        <EditUserModal
+          target={editTarget}
+          groups={groups || []}
+          onClose={() => setEditTarget(null)}
+          onSaved={(updated) => {
+            // The API returns the normalised user, so swap it in place rather
+            // than refetching the whole list.
+            setUsers(prev => prev.map(u => (u.id === updated.id ? { ...u, ...updated } : u)));
+          }}
+        />
       )}
     </div>
   );

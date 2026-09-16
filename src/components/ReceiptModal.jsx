@@ -68,7 +68,7 @@ export default function ReceiptModal({ receiptData, onClose }) {
           </div>
 
           {/* Receipt Details Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', fontSize: '0.85rem' }}>
+          <div className="grid-2" style={{ gap: '0.85rem', fontSize: '0.85rem' }}>
             <div>
               <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>Member Name:</span>
               <p style={{ fontWeight: 600, color: 'var(--text-main)' }}>{receiptData.memberName}</p>

@@ -12,12 +12,16 @@ import logRoutes from './routes/logRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import loanRoutes from './routes/loanRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import settingRoutes from './routes/settingRoutes.js';
 import User from './models/User.js';
 import { initUsersTable } from './models/User.js';
 import { initGroupsTable } from './models/Group.js';
 import { initLogsTable } from './models/Log.js';
 import { initLoansTable } from './models/Loan.js';
 import { initNotificationsTable } from './models/Notification.js';
+import { initSettingsTable } from './models/Setting.js';
+import { Settings, CENTRAL_ACCOUNT_KEY } from './models/Setting.js';
+import { getRelease, LOCAL_APK_PATH } from './config/appRelease.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -60,6 +64,28 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/settings', settingRoutes);
+
+// Seed the central payment account. It intentionally starts empty/inactive: a
+// superadmin activates it once the real bank details are known, so members are
+// never shown a placeholder account number to pay into.
+const seedCentralAccount = async () => {
+    try {
+        const existing = await Settings.get(CENTRAL_ACCOUNT_KEY);
+        if (!existing) {
+            await Settings.set(CENTRAL_ACCOUNT_KEY, {
+                bankName: '',
+                accountNumber: '',
+                accountName: '',
+                note: 'Set the platform central account in Admins → Central Account.',
+                active: false
+            });
+            console.log('Central account initialised (inactive — superadmin must configure it)');
+        }
+    } catch (error) {
+        console.error('Error seeding central account:', error.message);
+    }
+};
 
 // Lightweight health endpoint. Render's health check should point here rather
 // than at "/", so it does not depend on whether the frontend bundle exists.
@@ -67,11 +93,14 @@ const distDir = path.resolve(__dirname, '..', 'dist');
 const hasDist = fs.existsSync(distDir);
 
 app.get('/api/health', async (req, res) => {
+    const release = getRelease();
     const payload = {
         status: 'ok',
         uptime: Math.round(process.uptime()),
         database: process.env.STORAGE_MODE === 'file' ? 'file' : 'postgres',
-        frontend: hasDist ? 'served' : 'missing'
+        frontend: hasDist ? 'served' : 'missing',
+        appVersion: release.versionName,
+        appVersionCode: release.versionCode
     };
 
     if (payload.database === 'file') {
@@ -98,6 +127,84 @@ app.get('/api/health', async (req, res) => {
             await new Promise((r) => setTimeout(r, 750));
         }
     }
+});
+
+// ─── App release / over-the-air update ───────────────────────────────────────
+// The installed Android app polls this to find out whether a newer APK exists.
+// Deliberately public (no auth): a user who cannot sign in — e.g. because the
+// server address changed — must still be able to update the app.
+//
+// `currentVersionCode` is what the phone reports about ITSELF; the server only
+// compares numbers. Omitting it returns the latest version without a verdict,
+// which is what the web UI uses to display "latest version".
+app.get('/api/app/version', (req, res) => {
+    const release = getRelease();
+    const apkUrl = /^https?:\/\//i.test(release.apkPath)
+        ? release.apkPath
+        : `${req.protocol}://${req.get('host')}${release.apkPath}`;
+
+    const payload = {
+        latestVersionCode: release.versionCode,
+        latestVersionName: release.versionName,
+        apkUrl,
+        // False when no binary exists for this deployment (e.g. a hosted server
+        // without APK_URL set, since apk/ is gitignored). The client hides the
+        // download button rather than offering one that 404s.
+        apkAvailable: release.apkAvailable,
+        sha256: release.sha256,
+        notes: release.notes,
+        releasedAt: release.releasedAt
+    };
+
+    const clientRaw = req.query.currentVersionCode;
+    if (clientRaw === undefined || clientRaw === '') {
+        return res.json({ ...payload, updateAvailable: null });
+    }
+
+    const clientCode = Number.parseInt(clientRaw, 10);
+    if (!Number.isFinite(clientCode)) {
+        return res.status(400).json({ message: 'currentVersionCode must be an integer' });
+    }
+
+    payload.currentVersionCode = clientCode;
+    payload.updateAvailable = release.versionCode > clientCode || release.forceUpdate;
+    res.json(payload);
+});
+
+// ─── Android APK delivery ────────────────────────────────────────────────────
+// Kept OUTSIDE the `if (hasDist)` block: downloading/updating the app must not
+// depend on whether this process also happens to be serving the web bundle.
+//
+// The APK is kept in <projectRoot>/apk — NOT in public/ — because Vite copies
+// public/ into dist/ and Capacitor then embeds dist/ inside the APK itself,
+// making every build ship a copy of the PREVIOUS APK (the file doubled in size
+// each rebuild).
+//
+// On a hosted deployment the binary is normally absent (apk/ is gitignored), so
+// set APK_URL to a release URL; this route then simply redirects there instead
+// of 404ing.
+app.get('/downloads/savecircle.apk', (req, res) => {
+    const release = getRelease();
+
+    if (/^https?:\/\//i.test(release.apkPath)) {
+        return res.redirect(302, release.apkPath);
+    }
+
+    if (!fs.existsSync(LOCAL_APK_PATH)) {
+        return res.status(404).json({
+            message: 'The Android APK is not available on this server yet.',
+            hint: 'Build it with: npm run android:apk, or set APK_URL to a hosted release.'
+        });
+    }
+
+    const stat = fs.statSync(LOCAL_APK_PATH);
+    res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+    res.setHeader('Content-Disposition', 'attachment; filename="SaveCircle.apk"');
+    res.setHeader('Content-Length', stat.size);
+    // Never cache: an update must always fetch the current binary, or phones get
+    // stuck reinstalling the same stale build.
+    res.setHeader('Cache-Control', 'no-store');
+    res.sendFile(LOCAL_APK_PATH);
 });
 
 // Serve the built frontend (from <projectRoot>/dist) when present, so the same
@@ -186,11 +293,13 @@ export const startServer = async (port = process.env.PORT || 5000, host = proces
     await initLogsTable();
     await initLoansTable();
     await initNotificationsTable();
+    await initSettingsTable();
 
     const server = await new Promise((resolve) => {
         const s = app.listen(port, host, () => {
             console.log(`Server running on http://${host}:${port}`);
             seedUsers();
+            seedCentralAccount();
             resolve(s);
         });
     });

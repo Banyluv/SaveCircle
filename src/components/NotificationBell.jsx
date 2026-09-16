@@ -191,7 +191,7 @@ export default function NotificationBell({ onNavigate }) {
           border: '1px solid var(--border-card)',
           borderRadius: 'var(--radius-md)',
           boxShadow: 'var(--shadow-lg)',
-          zIndex: 200,
+          zIndex: 'var(--z-popover)',
           display: 'flex',
           flexDirection: 'column'
         }}>

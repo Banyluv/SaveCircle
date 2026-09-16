@@ -1,20 +1,30 @@
 import React, { useState } from 'react';
 import ContributionTracker from './ContributionTracker';
 import PayoutQueue from './PayoutQueue';
+import { useAuth } from '../context/AuthContext';
 import { formatNaira, getTrustScoreColor } from '../utils/formatters';
-import { ArrowLeft, MapPin, Users, Calendar, ShieldCheck, Wallet, ArrowLeftRight, Settings } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, Calendar, ShieldCheck, Wallet, ArrowLeftRight, Settings, Pencil } from 'lucide-react';
+import EditGroupModal from './EditGroupModal';
+import MobileBackBar from './MobileBackBar';
 
-export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayment, onViewReceipt, onOpenSwapModal, onDisbursePayout }) {
+export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayment, onViewReceipt, onOpenSwapModal, onDisbursePayout, onGroupUpdated }) {
   if (!group) return null;
 
+  const { user } = useAuth();
+  const isAdminUser = ['admin', 'superadmin', 'trustee'].includes(user?.role);
+
   const [activeTab, setActiveTab] = useState('contributions');
+  const [showEditGroup, setShowEditGroup] = useState(false);
 
   return (
     <div>
+      {/* Mobile-only back affordance (the sidebar is a drawer on phones) */}
+      <MobileBackBar onBack={onBack} label="Back" title={group.name} />
+
       {/* Back button & Header banner */}
       <button 
         onClick={onBack}
-        className="btn btn-outline btn-sm"
+        className="btn btn-outline btn-sm desktop-only"
         style={{ marginBottom: '1.25rem' }}
       >
         <ArrowLeft className="w-4 h-4" /> Back to Calabar Groups
@@ -56,6 +66,16 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
           <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
             Keeping fee: <strong style={{ color: 'var(--accent-gold)' }}>1 contribution per member</strong> ({formatNaira(group.contributionAmount)}) collected at the end of the circle
           </div>
+          {isAdminUser && (
+            <button
+              onClick={() => setShowEditGroup(true)}
+              className="btn btn-outline btn-sm"
+              style={{ marginTop: '0.75rem' }}
+              title="Edit this group's details, rules and account"
+            >
+              <Pencil className="w-3.5 h-3.5" /> Edit Group
+            </button>
+          )}
         </div>
       </div>
 
@@ -180,7 +200,7 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
         )}
 
         {activeTab === 'settings' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <div className="grid-2" style={{ gap: '1.5rem' }}>
             <div>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '1rem' }}>
                 Group Configuration
@@ -228,6 +248,14 @@ export default function GroupDetail({ group, onBack, onLogPayment, onVerifyPayme
           </div>
         )}
       </div>
+
+      {showEditGroup && (
+        <EditGroupModal
+          group={group}
+          onClose={() => setShowEditGroup(false)}
+          onSaved={(updated) => { if (onGroupUpdated) onGroupUpdated(updated); }}
+        />
+      )}
     </div>
   );
 }

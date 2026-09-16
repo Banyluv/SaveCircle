@@ -1,0 +1,33 @@
+# Normalise line endings so the repo behaves the same on every machine.
+
+# Default: let Git decide, but always store LF in the repository.
+* text=auto
+
+# Gradle / shell scripts MUST stay LF. A CRLF shebang or CRLF line in `gradlew`
+# makes the script fail on Linux and macOS with
+# "/usr/bin/env: 'sh\r': No such file or directory".
+*.sh          text eol=lf
+gradlew       text eol=lf
+gradle        text eol=lf
+
+# Windows-only scripts keep CRLF so they stay readable in Notepad/PowerShell ISE.
+*.bat         text eol=crlf
+*.cmd         text eol=crlf
+*.ps1         text eol=crlf
+
+# Binary — never touch these.
+*.png         binary
+*.jpg         binary
+*.jpeg        binary
+*.gif         binary
+*.ico         binary
+*.webp        binary
+*.jar         binary
+*.apk         binary
+*.aab         binary
+*.keystore    binary
+*.jks         binary
+*.woff        binary
+*.woff2       binary
+*.ttf         binary
+*.eot         binary

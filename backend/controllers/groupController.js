@@ -79,7 +79,29 @@ export const getGroupById = async (req, res) => {
 export const syncGroups = async (req, res) => {
     try {
         const groups = req.body;
+        if (!Array.isArray(groups)) {
+            return res.status(400).json({ message: 'Expected an array of groups' });
+        }
+
+        const { role, groupId } = req.user || {};
+
+        // This endpoint previously had no auth at all, so anybody could POST a
+        // payload and overwrite every group's data. Now:
+        //   - superadmin may write any group
+        //   - admin may only write their OWN group (extra ids are rejected)
+        //   - members/borrowers may not write groups at all
+        if (role !== 'superadmin') {
+            if (role !== 'admin' || !groupId) {
+                return res.status(403).json({ message: 'Not authorized to modify groups' });
+            }
+            const foreign = groups.filter(g => g?.id !== groupId);
+            if (foreign.length) {
+                return res.status(403).json({ message: 'Admins can only modify their own group' });
+            }
+        }
+
         for (const g of groups) {
+            if (!g || !g.id) continue;
             await Group.findOneAndUpdate({ id: g.id }, g, { upsert: true, new: true });
         }
         res.json({ success: true, message: 'Groups synced successfully' });

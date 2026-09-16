@@ -1,10 +1,10 @@
 import React from 'react';
-import { Wallet, LayoutDashboard, Users, History, UserCog, PieChart, HandCoins } from 'lucide-react';
+import { Wallet, LayoutDashboard, Users, History, UserCog, PieChart, HandCoins, Landmark } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const roleLabel = (r) => r === 'superadmin' ? 'Super Admin' : r === 'admin' ? 'Group Admin' : r === 'individual' ? 'Borrower' : r === 'cooperative' ? 'Cooperative' : r;
 
-export default function Sidebar({ activeNav, setActiveNav }) {
+export default function Sidebar({ activeNav, setActiveNav, open = false, onClose }) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
   // Loan-only borrowers (individuals / cooperatives) don't belong to thrift groups
@@ -23,22 +23,12 @@ export default function Sidebar({ activeNav, setActiveNav }) {
         { id: 'loans', label: 'Loans', icon: HandCoins },
         ...(isAdmin ? [{ id: 'members', label: 'Members', icon: Users }] : []),
         ...(user?.role === 'superadmin' ? [{ id: 'admins', label: 'Admins', icon: UserCog }] : []),
+        ...(isAdmin ? [{ id: 'central-account', label: 'Central Account', icon: Landmark }] : []),
         { id: 'audit', label: 'Audit History', icon: History }
       ];
 
   return (
-    <aside style={{
-      width: '240px',
-      minWidth: '240px',
-      background: 'var(--bg-surface)',
-      borderRight: '1px solid var(--border-card)',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      position: 'sticky',
-      top: 0,
-      zIndex: 40
-    }}>
+    <aside className={`sidebar${open ? ' open' : ''}`}>
       {/* Brand */}
       <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--border-card)', display: 'flex', justifyContent: 'center' }}>
         <img
@@ -85,7 +75,7 @@ export default function Sidebar({ activeNav, setActiveNav }) {
           return (
             <button
               key={item.id}
-              onClick={() => setActiveNav(item.id)}
+              onClick={() => { setActiveNav(item.id); if (onClose) onClose(); }}
               style={{
                 display: 'flex',
                 alignItems: 'center',

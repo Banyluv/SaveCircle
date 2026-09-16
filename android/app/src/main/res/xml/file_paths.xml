@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="my_images" path="." />
+    <cache-path name="my_cache_images" path="." />
+    <!--
+      The in-app updater downloads the new APK to
+      getExternalFilesDir(DIRECTORY_DOWNLOADS)/updates (falling back to the app
+      cache). Android requires the sharing app to declare a matching path here
+      before another process — the package installer — may read the file, so
+      without this entry installs fail with a FileUriExposedException.
+    -->
+    <external-files-path name="updates" path="." />
+    <cache-path name="updates_cache" path="." />
+</paths>

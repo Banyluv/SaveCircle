@@ -29,7 +29,7 @@ export default function Toast({ toast, onClose }) {
       position: 'fixed',
       bottom: '1.5rem',
       right: '1.5rem',
-      zIndex: 200,
+      zIndex: 'var(--z-toast)',
       background: 'var(--soft-bg)',
       border: '1px solid var(--border-card)',
       borderRadius: 'var(--radius-sm)',

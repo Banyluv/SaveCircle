@@ -182,7 +182,7 @@ export default function LoanDetailModal({ loanId, onClose, isAdmin, onChanged })
             {repayOpen && canRepay && (
               <form onSubmit={submitRepayment} className="glass-card" style={{ padding: '1.25rem', borderColor: 'var(--border-card-accent)' }}>
                 <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--text-main)' }}>Submit Manual Repayment</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 1.25rem' }}>
+                <div className="grid-2" style={{ gap: '0 1.25rem' }}>
                   <div className="form-group">
                     <label>Amount (₦)</label>
                     <input type="number" min={0} className="form-input" required value={repay.amount} onChange={(e) => setRepay({ ...repay, amount: e.target.value })} />

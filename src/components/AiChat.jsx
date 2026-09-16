@@ -146,7 +146,7 @@ export default function AiChat({ groups = [] }) {
           borderRadius: 'var(--radius-lg)',
           boxShadow: 'var(--shadow-lg)',
           overflow: 'hidden',
-          zIndex: 200,
+          zIndex: 'var(--z-popover)',
           animation: 'scaleUp 0.2s ease-out'
         }}>
           {/* Header */}
@@ -223,7 +223,7 @@ export default function AiChat({ groups = [] }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 200
+          zIndex: 'var(--z-popover)'
         }}
       >
         {open ? <X className="w-6 h-6" /> : <Sparkles className="w-6 h-6" />}

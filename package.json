@@ -9,13 +9,22 @@
     "build": "vite build",
     "preview": "vite preview",
     "electron:dev": "vite & electron .",
-    "electron:build": "vite build && electron-builder",
-    "electron:pack": "vite build && electron-builder --dir",
+    "electron:build": "vite build --base=./ && electron-builder",
+    "electron:pack": "vite build --base=./ && electron-builder --dir",
     "online:backend": "npm --prefix backend run start:online",
     "online": "vite build && node -e \"process.env.HOST='0.0.0.0'; import('./backend/server.js')\"",
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:apk": "powershell -ExecutionPolicy Bypass -File scripts/build-apk.ps1",
+    "android:apk:release": "powershell -ExecutionPolicy Bypass -File scripts/build-apk.ps1 -Release",
+    "android:keystore": "powershell -ExecutionPolicy Bypass -File scripts/create-keystore.ps1",
+    "android:open": "npx cap open android",
+    "release": "powershell -ExecutionPolicy Bypass -File scripts/publish-release.ps1",
+    "release:debug": "npm run build && npx cap sync android"
   },
   "dependencies": {
+    "@capacitor/android": "^6.2.2",
+    "@capacitor/core": "^6.2.2",
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",
     "cors": "^2.8.5",
@@ -28,6 +37,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.2.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
@@ -57,7 +67,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },

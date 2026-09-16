@@ -93,7 +93,7 @@ export default function AdminLoans() {
       </div>
 
       {view === 'borrowers' ? (
-        <BorrowersList />
+        <BorrowersList onBack={() => setView('applications')} />
       ) : (
         <>
           {statsCards && (

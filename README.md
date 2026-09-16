@@ -134,6 +134,12 @@ A `render.yaml` blueprint is included, so **New → Blueprint** works too — it
 | `NODE_ENV` | `production` |
 | `HOST` | `0.0.0.0` |
 | `CORS_ORIGIN` | *(optional)* comma-separated origin allowlist, only if you call the API from another domain |
+| `APK_URL` | *(optional)* public URL of the Android APK, if you host it outside this service |
+| `APP_VERSION_CODE` | *(optional)* overrides the version published to installed apps |
+| `APP_VERSION_NAME` | *(optional)* the version string users see |
+| `APP_APK_SHA256` | *(optional)* expected APK hash, verified on the device before installing |
+| `APP_RELEASE_NOTES` | *(optional)* short "what's new" text shown in the update prompt |
+| `APP_FORCE_UPDATE` | *(optional)* `true` forces every installed app to update |
 
 `HOST` matters: Render routes traffic to the container from outside, so the server must bind all interfaces rather than `127.0.0.1`. `server.js` detects this automatically via `NODE_ENV`, `HOST`, or Render's own `RENDER` variable, but setting it explicitly is safest.
 
@@ -154,7 +160,148 @@ Any hosted Postgres works. Tables and the default seed users are created automat
 - **Uploads/data persist** because all state lives in Postgres, not the container filesystem — which is ephemeral on Render and resets on every deploy.
 - Change the seeded account passwords before sharing the URL publicly.
 
+### 5. The Android APK and Render
+
+`apk/` is gitignored (it holds a multi-megabyte binary that must not go into git),
+so a fresh Render deploy has **no APK file**. Everything still works — the server
+simply reports `apkAvailable: false` from `/api/app/version`, and the web UI hides
+the download button instead of offering one that 404s.
+
+To serve the app for download from the deployed site, pick one:
+
+1. **Host the APK elsewhere** (GitHub Releases is the easiest) and set `APK_URL` to
+   its public URL. The server then redirects `/downloads/savecircle.apk` there, and
+   installed apps download from that URL directly.
+2. **Set the version fields** (`APP_VERSION_CODE`, `APP_VERSION_NAME`, `APP_APK_SHA256`,
+   `APP_RELEASE_NOTES`) so installed apps are told a newer build exists without
+   committing `apk/version.json`.
+
+Normally you do both at once by running `npm run release`, committing `apk/version.json`,
+and uploading `apk/savecircle.apk` to your release host.
+
 ---
 
-## 📄 License
+## � Central Account
+
+A single platform-wide bank account that all groups pay contributions into. It is
+managed by a superadmin under **Central Account** in the sidebar and is shown to
+members on their dashboard once activated.
+
+- **Superadmin** can edit and activate it. Activation is refused unless bank name,
+  account number and account name are all filled in — a half-configured account
+  would send members' money somewhere nobody can reconcile.
+- **Group admins and members** see it read-only, so they always know where to pay.
+- It starts inactive and blank. Until it is activated, no member is shown an
+  account number.
+
+Group accounts still exist alongside it: a group keeps its own bank account for
+payouts and local records. When the central account is active it is presented as
+the primary destination for contributions.
+
+---
+
+## 📱 Mobile (Android APK)
+
+The web UI is fully responsive (off-canvas drawer nav, stacked form grids,
+scrollable tables, bottom-sheet modals, safe-area padding). On a phone browser
+the app also offers an install prompt with an APK download.
+
+### How the APK gets data
+
+**A phone cannot run the Node/Postgres backend**, so the APK has no server of its
+own. It calls your deployed API, which means the server URL must be compiled into
+the bundle at build time — Capacitor serves the app from a local origin, so a
+relative `/api/...` would hit the phone itself.
+
+That URL comes from the `VITE_API_URL` environment variable (read in
+`src/utils/api.js`). Build with it:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-apk.ps1 -ApiUrl https://your-app.onrender.com
+```
+
+This runs `npm run build` with the URL baked in, syncs the assets into the native
+project, compiles the APK, and copies it to `apk\savecircle.apk`, which the
+backend then serves at `/downloads/savecircle.apk`. (It is kept in `apk\` and not
+`public\` because Vite copies `public\` into `dist\`, and Capacitor embeds `dist\`
+in the APK — an APK stored there would end up inside the next APK.)
+
+If you build **without** `-ApiUrl`, the app installs and opens but cannot load
+data; it detects this and shows an explicit "server not configured" message
+instead of a vague network error, along with a field for the server address. The
+address typed there is saved on the device and overrides the compiled-in URL, so
+an installed APK can be re-pointed (LAN address during testing, hosted URL later)
+without a rebuild.
+
+### Install flow on a phone
+
+1. Open the deployed URL in Chrome on Android.
+2. A prompt appears: **Install the SaveCircle app → Download APK**.
+3. Open the downloaded `SaveCircle.apk` and tap **Install**.
+4. Android will ask to allow *"Install unknown apps"* for the browser the first
+   time. That is the normal prompt for any app installed outside the Play Store —
+   the web page cannot trigger or bypass it.
+
+On iPhone the prompt instead explains **Share → Add to Home Screen**, because an
+APK cannot be installed on iOS at all.
+
+### Toolchain
+
+Building the APK needs Java 21 and the Android SDK (platform 35, build-tools
+35.0.0). Both were installed at `C:\Program Files\Java\jdk-21` and
+`C:\Android\sdk`; `scripts\sdk-setup.ps1` reproduces the SDK install.
+
+```powershell
+npm run android:sync          # build web assets + copy into the native project
+npm run android:apk           # debug APK (fastest, for testing)
+npm run android:apk:release   # signed release APK
+npm run android:keystore      # create the release keystore (once per machine)
+npm run android:open          # open the project in Android Studio
+```
+
+The APK published at `apk\savecircle.apk` and served on
+`/downloads/savecircle.apk` is a **signed release** build.
+
+### Signed release builds
+
+A release APK is signed with this project's own keystore, so Android treats it as
+a real app rather than the throwaway debug key (which is public and shared by
+every developer machine). That is what you sideload for day-to-day use or upload
+to a store.
+
+The key lives in `android\keystore\savecircle-release.jks` and its credentials in
+`android\keystore.properties`. Both are gitignored. Create them once — and again
+on any new machine — with:
+
+```powershell
+npm run android:keystore        # scripts\create-keystore.ps1
+```
+
+Then build:
+
+```powershell
+npm run android:apk:release     # signed release APK
+# or, baking the server URL in at the same time:
+powershell -ExecutionPolicy Bypass -File scripts\build-apk.ps1 -Release -ApiUrl https://your-app.onrender.com
+```
+
+`-Release` fails immediately if the signing material is missing, and after the
+build it verifies the result with `apksigner` and refuses to publish an unsigned
+APK — so `apk\savecircle.apk` is either signed or the build errored. There is no
+`app-release-unsigned.apk` to sign by hand any more.
+
+**Back the keystore and its password up.** Android only accepts an update signed
+with the same key, so losing them means every existing install must be uninstalled
+by hand before the next build will install, and a Play Store listing can never be
+updated again. `android\keystore.properties` holds the password in plain text by
+design (Gradle has to read it) — git never sees it, but a backup copy does need to
+exist somewhere you can reach.
+
+Because this APK is signed with a different key than the earlier **debug** build,
+a phone that still has the debug APK installed must uninstall it first: Android
+rejects the cross-key update with *"App not installed"*.
+
+---
+
+## �📄 License
 Created for community financial empowerment in Nigeria.

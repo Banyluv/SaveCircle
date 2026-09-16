@@ -188,11 +188,13 @@ export default function RegisterMemberModal({ onClose, groups }) {
             Share these credentials with the user so they can log in.
           </p>
 
-          <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-            <button type="button" onClick={onClose} className="btn btn-outline" style={{ flex: 1 }}>
-              Close
+          {/* Sticky action bar: on a phone this form is taller than the screen,
+              so the submit button must not scroll out of reach. */}
+          <div className="step-actions">
+            <button type="button" onClick={onClose} className="btn btn-outline">
+              Cancel
             </button>
-            <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={loading}>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? 'Creating...' : 'Create Account'}
             </button>
           </div>

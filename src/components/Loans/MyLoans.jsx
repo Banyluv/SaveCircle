@@ -5,6 +5,7 @@ import { formatNaira, formatDate } from '../../utils/formatters';
 import { loanBadge, LOAN_TYPE_LABELS } from './loanMeta';
 import ApplyLoanModal from './ApplyLoanModal';
 import LoanDetailModal from './LoanDetailModal';
+import ContributionCheckboxCard, { buildUnitsFromTotal } from '../ContributionCheckboxCard';
 
 // Status tabs. An application is created as 'pending' and becomes 'disbursed'
 // when approved (there is no separate 'active' application status), so the
@@ -35,6 +36,32 @@ export default function MyLoans({ isAdmin }) {
   useEffect(load, []);
 
   const filtered = statusFilter ? loans.filter((l) => l.status === statusFilter) : loans;
+
+  // ─── Repayment checklists ─────────────────────────────────────────────────
+  // A loan-only user (individual / cooperative) has no thrift group, so this is
+  // their equivalent of the member contribution checklist: one box per
+  // installment they accepted when the loan was approved, ticked by the amount
+  // actually repaid. Only disbursed/completed loans have a schedule.
+  const activeLoans = loans.filter((l) => l.total_installments > 0
+    && (l.status === 'disbursed' || l.status === 'active' || l.status === 'completed'));
+
+  const checklists = activeLoans.map((l) => {
+    const perUnit = Number(l.next_installment_amount) || 0;
+    // Derive the per-installment amount rather than trusting next_installment_amount,
+    // which is null once a loan is fully repaid.
+    const totalPayable = Number(l.total_amount_payable) || 0;
+    const count = Number(l.total_installments) || 0;
+    const unit = perUnit > 0 ? perUnit : (count > 0 ? totalPayable / count : 0);
+
+    const built = buildUnitsFromTotal({
+      totalPaid: Number(l.total_paid) || 0,
+      perUnitAmount: unit,
+      targetUnits: count,
+      perUnitLabel: 'Installment'
+    });
+
+    return { loan: l, ...built, unit };
+  });
 
   const s = stats?.stats;
   const statsCards = s ? [
@@ -93,6 +120,30 @@ export default function MyLoans({ isAdmin }) {
           </div>
         </div>
       )}
+
+      {/* Repayment checklist — one check box per installment the borrower agreed
+          to repay. This is the loan-only user's equivalent of the member
+          contribution checklist. */}
+      {checklists.map((c) => (
+        <ContributionCheckboxCard
+          key={c.loan.id}
+          title={`Repayment Checklist — ${c.loan.application_number}`}
+          subtitle={`${LOAN_TYPE_LABELS[c.loan.loan_type] || c.loan.loan_type} loan of ${formatNaira(c.loan.principal_amount)}`}
+          units={c.units}
+          perUnitLabel="Installment"
+          perUnitAmount={c.unit}
+          ticked={c.ticked}
+          total={c.total}
+          paid={c.paid}
+          target={c.target}
+          remainder={c.remainder}
+          hiddenCount={c.hiddenCount}
+          frequencyLabel={c.loan.repayment_frequency
+            ? `${c.loan.repayment_frequency.replace('_', ' ')} repayments`
+            : undefined}
+          footnote="Each box is one repayment you accepted when this loan was approved. Boxes tick as your repayments are verified."
+        />
+      ))}
 
       <div className="tab-list" style={{ marginBottom: '1rem' }}>
         {STATUS_FILTERS.map((s2) => (

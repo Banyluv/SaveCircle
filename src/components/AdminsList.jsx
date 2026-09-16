@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { authFetch } from '../utils/api';
-import { UserCog, ShieldCheck, Trash2 } from 'lucide-react';
+import { UserCog, ShieldCheck, Trash2, Pencil } from 'lucide-react';
+import EditUserModal from './EditUserModal';
+import MobileBackBar from './MobileBackBar';
 
 // Superadmin-only: manage group admins. Assign an admin to a group, or promote a member.
-export default function AdminsList({ groups }) {
+export default function AdminsList({ groups, onBack }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editTarget, setEditTarget] = useState(null);
 
   const load = () => {
     authFetch('/api/auth/users')
@@ -61,6 +64,8 @@ export default function AdminsList({ groups }) {
 
   return (
     <div>
+      <MobileBackBar onBack={onBack} label="Back to Dashboard" title="Group Admins" />
+
       <div style={{ marginBottom: '1.5rem' }}>
         <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <UserCog className="w-6 h-6 text-amber-400" /> Group Admins
@@ -85,16 +90,26 @@ export default function AdminsList({ groups }) {
                 <td><span className="badge badge-warning">{u.role === 'superadmin' ? 'Super Admin' : 'Group Admin'}</span></td>
                 <td>{u.role === 'superadmin' ? 'All Groups' : groupName(u.groupId)}</td>
                 <td>
-                  {u.role === 'admin' && u.email !== 'superadmin@savecircle.com' && (
-                    <button onClick={() => makeMember(u.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', marginRight: '0.5rem', fontSize: '0.8rem' }}>
-                      Demote
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <button
+                      onClick={() => setEditTarget(u)}
+                      className="btn btn-outline btn-sm"
+                      title={`Edit ${u.name}`}
+                      style={{ fontSize: '0.75rem' }}
+                    >
+                      <Pencil className="w-3.5 h-3.5" /> Edit
                     </button>
-                  )}
-                  {u.role === 'admin' && u.email !== 'superadmin@savecircle.com' && (
-                    <button onClick={() => removeAdmin(u.id)} title="Remove" style={{ background: 'none', border: 'none', color: 'var(--danger-text)', cursor: 'pointer' }}>
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
+                    {u.role === 'admin' && u.email !== 'superadmin@savecircle.com' && (
+                      <button onClick={() => makeMember(u.id)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem' }}>
+                        Demote
+                      </button>
+                    )}
+                    {u.role === 'admin' && u.email !== 'superadmin@savecircle.com' && (
+                      <button onClick={() => removeAdmin(u.id)} title="Remove" style={{ background: 'none', border: 'none', color: 'var(--danger-text)', cursor: 'pointer' }}>
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -129,6 +144,15 @@ export default function AdminsList({ groups }) {
             </tbody>
           </table>
         </div>
+      )}
+
+      {editTarget && (
+        <EditUserModal
+          target={editTarget}
+          groups={groups || []}
+          onClose={() => setEditTarget(null)}
+          onSaved={load}
+        />
       )}
     </div>
   );
